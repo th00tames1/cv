@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Editor</title>
+  <link rel="stylesheet" href="styles.css?v=13">
+  <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'&gt;&lt;text y='.9em' font-size='90'&gt;📄&lt;/text&gt;&lt;/svg&gt;">
+</head>
+<body>
+  <div id="topbar">
+    <span class="logo">📄 CV <span>Builder</span></span>
+    <select id="profile-select" title="저장된 CV 선택"></select>
+    <button class="tb-btn" id="btn-new">＋ 새 CV</button>
+    <button class="tb-btn" id="btn-dup">복제</button>
+    <button class="tb-btn" id="btn-rename">이름 변경</button>
+    <button class="tb-btn danger" id="btn-del">삭제</button>
+    <button class="tb-btn" id="btn-sample" title="박사과정+경력 예시 데이터로 채우기">샘플 데이터</button>
+    <button class="tb-btn" id="btn-json-export" title="백업/이동용 JSON 파일로 저장">JSON 내보내기</button>
+    <button class="tb-btn" id="btn-json-import" title="JSON 파일에서 CV 불러오기">JSON 가져오기</button>
+    <button class="tb-btn" id="btn-fsync"></button>
+    <button class="tb-btn" id="btn-publish" style="background:#1a7f37;border-color:#2ea043" title="현재 CV를 공개 페이지에 게시">🌐 게시</button>
+    <input type="file" id="json-file" accept=".json,application/json" style="display:none">
+    <input type="file" id="photo-file" accept="image/*" style="display:none">
+    <span id="save-status"></span>
+  </div>
+
+  <div id="main">
+    <div id="editor-pane"></div>
+
+    <div id="preview-pane">
+      <div class="preview-head">
+        <label>템플릿</label>
+        <select id="ctl-template"></select>
+        <button class="tb-btn" id="btn-gallery" style="color:#2c3648;background:#eef1f6;border-color:#d6dbe3">갤러리</button>
+        <label>강조색</label>
+        <input type="color" id="ctl-accent" title="템플릿 포인트 색상">
+        <span id="swatches" title="이 양식의 공식 색상 팔레트"></span>
+        <label>글자 크기</label>
+        <select id="ctl-size">
+          <option value="small">작게</option>
+          <option value="medium">보통</option>
+          <option value="large">크게</option>
+        </select>
+        <label>줄 간격</label>
+        <select id="ctl-density">
+          <option value="compact">좁게</option>
+          <option value="normal">보통</option>
+          <option value="relaxed">넓게</option>
+        </select>
+        <label>이름 굵게</label>
+        <input type="text" id="ctl-boldname" placeholder="예: Hong, G.; G. Hong" title="논문/발표 저자 목록에서 굵게 표시할 본인 이름 표기 (여러 개는 ; 로 구분)">
+        <span class="ph-spacer"></span>
+        <button class="action-btn" id="btn-print" title="브라우저 인쇄 → PDF로 저장 가능">인쇄 / PDF</button>
+        <button class="action-btn primary" id="btn-docx">Word로 내보내기 (.docx)</button>
+      </div>
+      <div id="preview-scroll">
+        <div id="page-wrap">
+          <div id="cv-page" class="page tpl-harvard size-medium"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="tpl-modal" class="hidden">
+    <div class="modal-box">
+      <div class="modal-head">
+        <h3>템플릿 갤러리</h3>
+        <span class="sub">실제로 널리 쓰이는 양식들을 원본 그대로 재현했습니다. 클릭하면 즉시 적용됩니다 (내용 유지).</span>
+        <button class="modal-close" id="tpl-modal-close">✕</button>
+      </div>
+      <div id="tpl-grid"></div>
+    </div>
+  </div>
+
+  <div id="pub-modal" class="hidden">
+    <div class="modal-box" style="max-width:560px">
+      <div class="modal-head">
+        <h3>공개 페이지에 게시</h3>
+        <button class="modal-close" id="pub-modal-close">✕</button>
+      </div>
+      <p class="pub-warn">⚠ 게시하면 현재 CV의 <b>모든 내용(이메일·전화번호 포함)</b>이
+        공개 페이지에서 누구나 볼 수 있게 됩니다. 공개하고 싶지 않은 정보는 지우거나,
+        [복제]로 공개용 버전을 따로 만들어 게시하세요.</p>
+      <div class="pub-row">
+        <label>GitHub 토큰 (Fine-grained PAT)</label>
+        <input type="password" id="pub-pat" placeholder="github_pat_..." autocomplete="off">
+        <span id="pub-pat-state" class="pub-hint"></span>
+      </div>
+      <p class="pub-hint">토큰 만들기: GitHub → Settings → Developer settings → Fine-grained tokens →
+        Repository: <b>cv</b>만 선택 → Permissions: <b>Contents = Read and write</b>.
+        토큰은 이 브라우저에만 저장되며 외부로 전송되지 않습니다 (GitHub API 호출에만 사용).</p>
+      <div class="pub-actions">
+        <button class="action-btn primary" id="btn-pub-github">GitHub로 바로 게시</button>
+        <button class="action-btn" id="btn-pub-file" title="토큰 없이: 파일을 내려받아 폴더에 넣고 git push">파일로 내려받기</button>
+        <button class="tb-btn danger" id="btn-pat-del" style="color:#2c3648">토큰 삭제</button>
+        <a class="pub-hint" href="https://th00tames1.github.io/cv/" target="_blank" rel="noopener" style="margin-left:auto">공개 페이지 열기 ↗</a>
+      </div>
+      <p id="pub-last" class="pub-hint"></p>
+      <p id="pub-status" class="pub-hint"></p>
+    </div>
+  </div>
+
+  <div id="gate" class="hidden">
+    <div class="gate-box">
+      <div class="gate-icon">🔒</div>
+      <p>Private — enter passcode</p>
+      <input type="password" id="gate-pw" autocomplete="off" autofocus>
+      <button id="gate-btn" type="button">열기</button>
+      <p id="gate-err" class="gate-err hidden">암호가 올바르지 않습니다</p>
+    </div>
+  </div>
+  <script>
+  // 호스팅(github.io) 환경에서만 동작하는 간단한 접속 게이트.
+  // 코드에는 SHA-256 해시만 저장되며, 통과 여부는 이 브라우저에 기억됩니다.
+  (function () {
+    var GATE_HASH = 'e6518d16123e8302afe77a9c40299f10c67e7c2028e557079d40eb983bc38990';
+    var hosted = /\.github\.io$/.test(location.hostname);
+    if (!hosted || localStorage.getItem('cvbuilder.gateok') === GATE_HASH) return;
+    var g = document.getElementById('gate');
+    g.classList.remove('hidden');
+    function check() {
+      var v = document.getElementById('gate-pw').value;
+      crypto.subtle.digest('SHA-256', new TextEncoder().encode(v)).then(function (buf) {
+        var hex = Array.from(new Uint8Array(buf)).map(function (b) { return b.toString(16).padStart(2, '0'); }).join('');
+        if (hex === GATE_HASH) {
+          localStorage.setItem('cvbuilder.gateok', GATE_HASH);
+          g.remove();
+        } else {
+          document.getElementById('gate-err').classList.remove('hidden');
+          document.getElementById('gate-pw').value = '';
+        }
+      });
+    }
+    document.getElementById('gate-btn').addEventListener('click', check);
+    // 한글 IME 조합 중 Enter는 무시 (조합 미완성 입력으로 오판 방지)
+    document.getElementById('gate-pw').addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.isComposing) check(); });
+  })();
+  </script>
+
+  <script src="docx.iife.js"></script>
+  <script src="cv-model.js?v=13"></script>
+  <script src="cv-render.js?v=13"></script>
+  <script src="docx-export.js?v=13"></script>
+  <script src="app.js?v=13"></script>
+</body>
+</html>

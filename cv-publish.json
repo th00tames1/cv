@@ -1,0 +1,519 @@
+{
+  "app": "cv-builder",
+  "version": 1,
+  "publishedAt": "2026-07-20T07:58:42.952Z",
+  "profile": {
+    "name": "Sample CV",
+    "data": {
+      "personal": {
+        "fullName": "Gildong Hong",
+        "title": "Ph.D. Candidate, Department of Computer Science, Seoul National University",
+        "email": "gdhong@snu.ac.kr",
+        "phone": "+82-10-1234-5678",
+        "pronouns": "",
+        "address": "Seoul, South Korea",
+        "website": "gdhong.github.io",
+        "linkedin": "linkedin.com/in/gdhong",
+        "github": "github.com/gdhong",
+        "scholar": "scholar.google.com/citations?user=abc123",
+        "orcid": "0000-0002-1234-5678"
+      },
+      "sections": [
+        {
+          "id": "x3sdfcwhhmrsxns3t",
+          "type": "summary",
+          "title": "Professional Summary",
+          "enabled": true,
+          "entries": [
+            {
+              "text": "Ph.D. candidate in Computer Science with 3+ years of industry experience in large-scale machine learning systems. Research focuses on efficient deep learning and human-centered AI. Author of 6 peer-reviewed publications; experienced in leading cross-functional projects from research prototypes to production."
+            }
+          ]
+        },
+        {
+          "id": "xs8vs6x39mrsxns3t",
+          "type": "research_interests",
+          "title": "Research Interests",
+          "enabled": true,
+          "entries": [
+            {
+              "text": "Efficient Deep Learning\nHuman-Centered AI\nLarge Language Models\nData Visualization"
+            }
+          ]
+        },
+        {
+          "id": "xj4ue695emrsxns3t",
+          "type": "education",
+          "title": "Education",
+          "enabled": true,
+          "entries": [
+            {
+              "degree": "Ph.D. in Computer Science",
+              "institution": "Seoul National University",
+              "location": "Seoul, South Korea",
+              "period": "Expected Aug 2027",
+              "gpa": "GPA 3.95/4.0",
+              "advisor": "Prof. Jane Kim",
+              "thesis": "Resource-Efficient Training of Large Language Models (in progress)",
+              "committee": "Prof. Jane Kim (chair), Prof. Minsu Lee, Prof. Sarah Park",
+              "notes": ""
+            },
+            {
+              "degree": "M.S. in Computer Science",
+              "institution": "Seoul National University",
+              "location": "Seoul, South Korea",
+              "period": "Feb 2019",
+              "gpa": "GPA 3.9/4.0",
+              "advisor": "Prof. Minsu Lee",
+              "thesis": "Lightweight Neural Architectures for Edge Devices",
+              "committee": "",
+              "notes": ""
+            },
+            {
+              "degree": "B.S. in Computer Science and Engineering",
+              "institution": "Korea University",
+              "location": "Seoul, South Korea",
+              "period": "Feb 2017",
+              "gpa": "GPA 3.8/4.0, Summa Cum Laude",
+              "advisor": "",
+              "thesis": "",
+              "committee": "",
+              "notes": ""
+            }
+          ]
+        },
+        {
+          "id": "x5160hspsmrsxns3t",
+          "type": "experience",
+          "title": "Professional Experience",
+          "enabled": true,
+          "entries": [
+            {
+              "position": "Machine Learning Engineer",
+              "organization": "NAVER Corp.",
+              "location": "Seongnam, South Korea",
+              "period": "Mar 2019 – Aug 2022",
+              "bullets": "Built and operated a large-scale recommendation system serving 20M+ daily active users\nReduced model inference cost by 40% through quantization and distillation\nLed a team of 4 engineers for the search-ranking model refresh project\nCo-developed internal MLOps pipeline adopted by 10+ teams"
+            },
+            {
+              "position": "Software Engineering Intern",
+              "organization": "Kakao Corp.",
+              "location": "Pangyo, South Korea",
+              "period": "Jul 2016 – Aug 2016",
+              "bullets": "Developed data-pipeline monitoring dashboard used by the data platform team"
+            }
+          ]
+        },
+        {
+          "id": "xpzy4pt42mrsxns3t",
+          "type": "research",
+          "title": "Research Experience",
+          "enabled": true,
+          "entries": [
+            {
+              "role": "Graduate Research Assistant",
+              "lab": "Machine Intelligence Lab, Seoul National University",
+              "location": "Seoul, South Korea",
+              "period": "Sep 2022 – Present",
+              "bullets": "Research on memory-efficient fine-tuning of large language models\nDeveloped an open-source library for parameter-efficient training (1.2k GitHub stars)\nCollaborating with hospital partners on clinical NLP applications"
+            },
+            {
+              "role": "Undergraduate Research Intern",
+              "lab": "Data Science Lab, Korea University",
+              "location": "Seoul, South Korea",
+              "period": "Jun 2016 – Dec 2016",
+              "bullets": "Studied graph-based anomaly detection on financial transaction data"
+            }
+          ]
+        },
+        {
+          "id": "xo3bm104pmrsxns3t",
+          "type": "publications",
+          "title": "Publications",
+          "enabled": true,
+          "entries": [
+            {
+              "ptype": "journal",
+              "status": "Published",
+              "authors": "Hong, G., Kim, J., & Lee, S.",
+              "year": "2025",
+              "title": "Memory-efficient fine-tuning of large language models via selective activation recomputation",
+              "venue": "Journal of Machine Learning Research",
+              "volpages": "26(4), 1–28",
+              "doi": "https://doi.org/10.5555/jmlr.2025.26",
+              "tags": "SCI(E), IF 6.0"
+            },
+            {
+              "ptype": "journal",
+              "status": "Under Review",
+              "authors": "Hong, G., Park, H., & Kim, J.",
+              "year": "2026",
+              "title": "A survey on parameter-efficient adaptation of foundation models",
+              "venue": "ACM Computing Surveys",
+              "volpages": "",
+              "doi": "",
+              "tags": ""
+            },
+            {
+              "ptype": "conference",
+              "status": "Published",
+              "authors": "Hong, G., Choi, D., & Kim, J.",
+              "year": "2024",
+              "title": "FastLoRA: Accelerating low-rank adaptation with structured sparsity",
+              "venue": "Proceedings of NeurIPS 2024",
+              "volpages": "pp. 1123–1135",
+              "doi": "https://doi.org/10.5555/neurips.2024.1123",
+              "tags": ""
+            },
+            {
+              "ptype": "conference",
+              "status": "Published",
+              "authors": "Lee, S., Hong, G., & Kim, J.",
+              "year": "2023",
+              "title": "Understanding user trust in AI-assisted writing tools",
+              "venue": "Proceedings of ACM CHI 2023",
+              "volpages": "pp. 442–455",
+              "doi": "https://doi.org/10.5555/chi.2023.442",
+              "tags": ""
+            },
+            {
+              "ptype": "preprint",
+              "status": "Published",
+              "authors": "Hong, G., & Kim, J.",
+              "year": "2025",
+              "title": "Scaling laws for parameter-efficient fine-tuning",
+              "venue": "arXiv preprint",
+              "volpages": "arXiv:2501.01234",
+              "doi": "",
+              "tags": ""
+            }
+          ]
+        },
+        {
+          "id": "xrnxq5normrsxns3t",
+          "type": "presentations",
+          "title": "Presentations",
+          "enabled": true,
+          "entries": [
+            {
+              "pres_type": "Oral",
+              "date": "Dec 2024",
+              "authors": "Hong, G.",
+              "title": "FastLoRA: Accelerating low-rank adaptation with structured sparsity",
+              "event": "NeurIPS 2024",
+              "location": "Vancouver, Canada"
+            },
+            {
+              "pres_type": "Poster",
+              "date": "Jul 2024",
+              "authors": "Hong, G., & Choi, D.",
+              "title": "Efficient adaptation of LLMs under memory constraints",
+              "event": "ICML 2024 Workshop on Efficient ML",
+              "location": "Vienna, Austria"
+            },
+            {
+              "pres_type": "Invited Talk",
+              "date": "May 2025",
+              "authors": "Hong, G.",
+              "title": "Parameter-efficient fine-tuning in practice",
+              "event": "Korea AI Summit",
+              "location": "Seoul, South Korea"
+            }
+          ]
+        },
+        {
+          "id": "xgm63s4xpmrsxns3t",
+          "type": "projects",
+          "title": "Projects",
+          "enabled": true,
+          "entries": [
+            {
+              "name": "PEFT-Kit",
+              "role": "Creator & Maintainer",
+              "period": "2023 – Present",
+              "link": "github.com/gdhong/peft-kit",
+              "tech": "Python, PyTorch, HuggingFace",
+              "desc": "Open-source library for parameter-efficient fine-tuning (1.2k stars, 40+ contributors)\nAdopted in 3 published papers by external groups"
+            },
+            {
+              "name": "ClinNote",
+              "role": "Research Lead",
+              "period": "2024 – Present",
+              "link": "",
+              "tech": "Python, FastAPI, React",
+              "desc": "Clinical note summarization system piloted at two university hospitals"
+            }
+          ]
+        },
+        {
+          "id": "x0wrv8xnnmrsxns3t",
+          "type": "teaching",
+          "title": "Teaching Experience",
+          "enabled": true,
+          "entries": [
+            {
+              "role": "Teaching Assistant",
+              "course": "CS470: Introduction to Machine Learning",
+              "institution": "Seoul National University",
+              "period": "Spring 2023, Spring 2024",
+              "desc": "Led weekly lab sessions for 120+ students; redesigned programming assignments"
+            },
+            {
+              "role": "Instructor",
+              "course": "Python Bootcamp for Graduate Researchers",
+              "institution": "SNU Graduate School",
+              "period": "Winter 2023",
+              "desc": "Designed and taught a 2-week intensive course (60 participants)"
+            }
+          ]
+        },
+        {
+          "id": "xhrmy6qo3mrsxns3t",
+          "type": "awards",
+          "title": "Honors & Awards",
+          "enabled": true,
+          "entries": [
+            {
+              "name": "Best Paper Award",
+              "issuer": "ICML 2024 Workshop on Efficient ML",
+              "date": "2024",
+              "note": ""
+            },
+            {
+              "name": "National Ph.D. Fellowship",
+              "issuer": "National Research Foundation of Korea",
+              "date": "2023 – 2025",
+              "note": "Awarded to 50 of 1,800 applicants nationwide"
+            },
+            {
+              "name": "Excellence Award, Corporate Hackathon",
+              "issuer": "NAVER Corp.",
+              "date": "2021",
+              "note": ""
+            }
+          ]
+        },
+        {
+          "id": "xxfz6ekk9mrsxns3t",
+          "type": "grants",
+          "title": "Grants & Fellowships",
+          "enabled": true,
+          "entries": [
+            {
+              "name": "Efficient On-Device LLM Adaptation",
+              "funder": "National Research Foundation of Korea",
+              "role": "Student PI",
+              "amount": "₩60,000,000",
+              "period": "2024 – 2026",
+              "desc": ""
+            },
+            {
+              "name": "AI Graduate Fellowship",
+              "funder": "Ministry of Science and ICT",
+              "role": "Fellow",
+              "amount": "₩24,000,000/yr",
+              "period": "2022 – Present",
+              "desc": ""
+            }
+          ]
+        },
+        {
+          "id": "xu2am9xx7mrsxns3t",
+          "type": "skills",
+          "title": "Skills",
+          "enabled": true,
+          "entries": [
+            {
+              "category": "Programming",
+              "items": "Python, C++, JavaScript/TypeScript, SQL"
+            },
+            {
+              "category": "ML / Data",
+              "items": "PyTorch, JAX, HuggingFace, scikit-learn, Spark, Airflow"
+            },
+            {
+              "category": "Systems & Tools",
+              "items": "Linux, Docker, Kubernetes, AWS, Git, CI/CD"
+            },
+            {
+              "category": "Research",
+              "items": "Experimental design, statistical analysis, technical writing, LaTeX"
+            }
+          ]
+        },
+        {
+          "id": "x5snvmeq0mrsxns3t",
+          "type": "languages",
+          "title": "Languages",
+          "enabled": true,
+          "entries": [
+            {
+              "language": "Korean",
+              "level": "Native",
+              "test": ""
+            },
+            {
+              "language": "English",
+              "level": "Fluent",
+              "test": "TOEFL 112, OPIc AL"
+            },
+            {
+              "language": "Japanese",
+              "level": "Intermediate",
+              "test": "JLPT N2"
+            }
+          ]
+        },
+        {
+          "id": "xpnt6m9klmrsxns3t",
+          "type": "certifications",
+          "title": "Certifications & Licenses",
+          "enabled": true,
+          "entries": [
+            {
+              "name": "AWS Certified Solutions Architect – Associate",
+              "issuer": "Amazon Web Services",
+              "date": "Mar 2022",
+              "cid": ""
+            },
+            {
+              "name": "Engineer Information Processing (정보처리기사)",
+              "issuer": "HRD Korea",
+              "date": "Nov 2018",
+              "cid": ""
+            }
+          ]
+        },
+        {
+          "id": "xrnmvtjnnmrsxns3t",
+          "type": "service",
+          "title": "Academic Service",
+          "enabled": true,
+          "entries": [
+            {
+              "role": "Reviewer",
+              "organization": "NeurIPS 2025, ICML 2025, ACL 2025",
+              "period": "2024 – Present",
+              "desc": ""
+            },
+            {
+              "role": "Student Volunteer",
+              "organization": "ACM CHI 2023",
+              "period": "2023",
+              "desc": ""
+            },
+            {
+              "role": "Lab Seminar Organizer",
+              "organization": "Machine Intelligence Lab, SNU",
+              "period": "2023 – Present",
+              "desc": ""
+            }
+          ]
+        },
+        {
+          "id": "x3jnqordgmrsxns3t",
+          "type": "volunteer",
+          "title": "Volunteer Experience",
+          "enabled": true,
+          "entries": [
+            {
+              "role": "Coding Mentor",
+              "organization": "Hope Coding School (비영리 교육봉사)",
+              "location": "Seoul, South Korea",
+              "period": "2020 – Present",
+              "desc": "Monthly programming classes for underprivileged middle-school students\nMentored 30+ students; 5 advanced to national software competitions"
+            },
+            {
+              "role": "Translation Volunteer",
+              "organization": "TED Translators",
+              "location": "Remote",
+              "period": "2019 – 2021",
+              "desc": "Translated 25+ technology talks into Korean"
+            }
+          ]
+        },
+        {
+          "id": "x424iqvynmrsxns3t",
+          "type": "memberships",
+          "title": "Professional Memberships",
+          "enabled": true,
+          "entries": [
+            {
+              "organization": "ACM",
+              "role": "Student Member",
+              "period": "2022 – Present"
+            },
+            {
+              "organization": "IEEE",
+              "role": "Student Member",
+              "period": "2022 – Present"
+            },
+            {
+              "organization": "Korean Institute of Information Scientists and Engineers (KIISE)",
+              "role": "Student Member",
+              "period": "2017 – Present"
+            }
+          ]
+        },
+        {
+          "id": "x99ytmez7mrsxns3t",
+          "type": "patents",
+          "title": "Patents",
+          "enabled": true,
+          "entries": [
+            {
+              "title": "Method and apparatus for compressing neural network models",
+              "inventors": "Hong, G., Kim, M.",
+              "number": "KR 10-2021-0123456",
+              "pstatus": "Granted",
+              "date": "2021"
+            }
+          ]
+        },
+        {
+          "id": "xzumyhmsbmrsxns3t",
+          "type": "references",
+          "title": "References",
+          "enabled": true,
+          "entries": [
+            {
+              "name": "Prof. Jane Kim",
+              "title": "Professor",
+              "institution": "Department of Computer Science, Seoul National University",
+              "email": "jkim@snu.ac.kr",
+              "phone": ""
+            },
+            {
+              "name": "Dr. Minho Seo",
+              "title": "Director of AI Research",
+              "institution": "NAVER Corp.",
+              "email": "minho.seo@navercorp.com",
+              "phone": ""
+            }
+          ]
+        },
+        {
+          "id": "xk6p9ofmemrsxns3t",
+          "type": "custom",
+          "title": "Additional Information",
+          "enabled": false,
+          "entries": [
+            {
+              "heading": "",
+              "sub": "",
+              "right": "",
+              "desc": ""
+            }
+          ]
+        }
+      ]
+    },
+    "settings": {
+      "template": "harvard",
+      "accent": "#000000",
+      "fontSize": "medium",
+      "density": "normal",
+      "boldName": "Hong, G."
+    }
+  }
+}

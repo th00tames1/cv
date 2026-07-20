@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Curriculum Vitae</title>
+  <link rel="stylesheet" href="styles.css?v=13">
+  <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'&gt;&lt;text y='.9em' font-size='90'&gt;📄&lt;/text&gt;&lt;/svg&gt;">
+</head>
+<body class="viewer">
+  <div id="viewer-empty" class="hidden">
+    <div class="ve-box">
+      <div style="font-size:34px">📄</div>
+      <h2>Curriculum Vitae</h2>
+      <p>This page is being updated. Please check back soon.</p>
+    </div>
+  </div>
+
+  <div id="viewer-main" class="hidden">
+    <header class="hero">
+      <div class="hero-inner">
+        <img id="hero-photo" class="hidden" alt="">
+        <h1 id="hero-name"></h1>
+        <p id="hero-title"></p>
+        <div id="hero-chips"></div>
+      </div>
+    </header>
+    <div class="viewer-wrap">
+      <div class="viewer-toolbar">
+        <span id="pub-date" class="vt-date"></span>
+        <span style="flex:1"></span>
+        <button class="action-btn" id="btn-v-print" title="Print or save as PDF">Print / Save PDF</button>
+        <button class="action-btn primary" id="btn-v-docx">Download Word (.docx)</button>
+      </div>
+      <div id="v-page-wrap">
+        <div id="cv-page" class="page"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="cv-model.js?v=13"></script>
+  <script src="cv-render.js?v=13"></script>
+  <script src="viewer.js?v=13"></script>
+</body>
+</html>
