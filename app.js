@@ -447,8 +447,10 @@
     var pw = page.offsetWidth || 794; // transform과 무관한 레이아웃 폭 (용지별 794/816)
     var avail = scroll.clientWidth - 44;
     var scale = Math.min(1, avail / pw);
+    // 모바일에서 글자가 읽히도록 최소 배율 유지 — 넘치는 폭은 preview-scroll에서 가로 스크롤
+    if (scale < 0.62) scale = 0.62;
     page.style.transform = scale < 1 ? 'scale(' + scale + ')' : '';
-    wrap.style.width = Math.min(pw, Math.round(pw * scale)) + 'px';
+    wrap.style.width = Math.round(pw * scale) + 'px';
     wrap.style.height = Math.round(page.offsetHeight * scale) + 'px';
   }
   window.addEventListener('resize', fitPreview);
@@ -760,7 +762,15 @@
     s.style.color = ok ? '#1a7f37' : '#b3392f';
   }
 
+  // 빈 CV 게시 방지 (다른 브라우저에서 열면 프로필이 비어 있어 실수로 공개본을 지울 수 있음)
+  function cvIsEmpty(pr) {
+    var p = pr.data.personal || {};
+    if (M.trim(p.fullName) || M.trim(p.email)) return false;
+    return !pr.data.sections.some(function (s) { return s.enabled && M.nonEmptyEntries(s).length; });
+  }
+
   function publishViaGitHub() {
+    if (cvIsEmpty(P())) { pubStatus('빈 CV는 게시할 수 없습니다. 내용을 작성하거나 다른 프로필을 선택하세요.'); return; }
     var pat = el('pub-pat').value.trim() || localStorage.getItem('cvbuilder.pat') || '';
     if (!pat) { pubStatus('GitHub 토큰을 입력하세요 (아래 안내 참고)'); return; }
     localStorage.setItem('cvbuilder.pat', pat);
@@ -815,6 +825,7 @@
     el('pub-modal').addEventListener('click', function (ev) { if (ev.target === this) this.classList.add('hidden'); });
     el('btn-pub-github').addEventListener('click', publishViaGitHub);
     el('btn-pub-file').addEventListener('click', function () {
+      if (cvIsEmpty(P())) { pubStatus('빈 CV는 게시할 수 없습니다. 내용을 작성하거나 다른 프로필을 선택하세요.'); return; }
       var blob = new Blob([JSON.stringify(publishPayload(), null, 2)], { type: 'application/json' });
       downloadBlob(blob, 'cv-publish.json');
       pubStatus('내려받은 cv-publish.json을 저장소 폴더에 넣고 git push 하세요.', true);
