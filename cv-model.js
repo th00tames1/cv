@@ -15,9 +15,12 @@
   function trim(s) { return (s == null ? '' : String(s)).trim(); }
   function linesOf(text) { return trim(text).split(/\r?\n/).map(trim).filter(Boolean); }
 
-  /* ---------- 필드 정의 헬퍼 ---------- */
-  function F(key, label, ph, w, type, options) {
-    return { key: key, label: label, ph: ph || '', w: w || 'half', type: type || 'text', options: options || null };
+  /* ---------- 필드 정의 헬퍼 ----------
+   * type: text | textarea | select(고정 목록) | combo(목록 + 직접 입력 가능)
+   * def : 새 항목의 기본값 (없으면 select는 첫 옵션, 나머지는 빈 값)
+   */
+  function F(key, label, ph, w, type, options, def) {
+    return { key: key, label: label, ph: ph || '', w: w || 'half', type: type || 'text', options: options || null, def: def };
   }
 
   var SECTION_DEFS = {
@@ -38,7 +41,12 @@
         F('period', '기간 (재학 중이면 Expected 사용)', 'Expected May 2027'),
         F('gpa', 'GPA', 'GPA 3.95/4.0'),
         F('advisor', '지도교수', 'Prof. Jane Kim'),
-        F('thesis', '학위논문 제목', 'Dissertation: ...', 'full'),
+        F('thesisLabel', '논문/작품 라벨 (앞에 붙는 말 · 직접 입력 가능)', '예: Dissertation', 'half', 'combo',
+          [['Dissertation', 'Dissertation (박사 학위논문)'], ['Thesis', 'Thesis (석사 학위논문)'],
+           ['Master\'s Thesis', 'Master\'s Thesis'], ['Doctoral Dissertation', 'Doctoral Dissertation'],
+           ['Capstone Project', 'Capstone Project (캡스톤)'], ['Graduation Work', 'Graduation Work (졸업작품)'],
+           ['Final Project', 'Final Project'], ['', '(라벨 없음 / None)']], 'Dissertation'),
+        F('thesis', '논문/졸업작품 제목', '예: Real-time forest slash pile volume estimation', 'full'),
         F('committee', '논문 심사위원 (선택)', 'Prof. A, Prof. B, Prof. C', 'full'),
         F('notes', '추가 사항 (한 줄에 하나씩)', '', 'full', 'textarea')
       ]
@@ -67,7 +75,7 @@
       title: 'Publications', ko: '논문/출판',
       fields: [
         F('ptype', '구분', '', 'half', 'select', [['journal', 'Journal Article'], ['conference', 'Conference Paper'], ['book', 'Book Chapter'], ['preprint', 'Preprint'], ['other', 'Other']]),
-        F('status', '상태', '', 'half', 'select', [['Published', 'Published'], ['Accepted', 'Accepted (In Press)'], ['Under Review', 'Under Review'], ['In Preparation', 'In Preparation']]),
+        F('status', '상태 (직접 입력 가능)', '예: Published', 'half', 'combo', [['Published', 'Published'], ['Accepted', 'Accepted (In Press)'], ['Under Review', 'Under Review'], ['In Preparation', 'In Preparation'], ['Submitted', 'Submitted']]),
         F('authors', '저자', 'Hong, G., Kim, J., & Lee, S.', 'full'),
         F('year', '연도', '2025'),
         F('title', '제목', 'A study on ...', 'full'),
@@ -80,7 +88,7 @@
     presentations: {
       title: 'Presentations', ko: '학회 발표',
       fields: [
-        F('pres_type', '형식', '', 'half', 'select', [['Oral', 'Oral (구두)'], ['Poster', 'Poster (포스터)'], ['Invited Talk', 'Invited Talk (초청)']]),
+        F('pres_type', '형식 (직접 입력 가능)', '예: Oral', 'half', 'combo', [['Oral', 'Oral (구두)'], ['Poster', 'Poster (포스터)'], ['Invited Talk', 'Invited Talk (초청)'], ['Keynote', 'Keynote']]),
         F('date', '날짜', 'Jul 2025'),
         F('authors', '발표자', 'Hong, G., & Kim, J.', 'full'),
         F('title', '제목', '', 'full'),
@@ -140,7 +148,7 @@
       title: 'Languages', ko: '언어', tight: true,
       fields: [
         F('language', '언어', 'English'),
-        F('level', '수준', '', 'half', 'select', [['', '— 선택 —'], ['Native', 'Native (모국어)'], ['Fluent', 'Fluent (유창)'], ['Advanced', 'Advanced (상급)'], ['Intermediate', 'Intermediate (중급)'], ['Basic', 'Basic (기초)']]),
+        F('level', '수준 (직접 입력 가능)', '예: C1, 상급', 'half', 'combo', [['Native', 'Native (모국어)'], ['Fluent', 'Fluent (유창)'], ['Advanced', 'Advanced (상급)'], ['Intermediate', 'Intermediate (중급)'], ['Basic', 'Basic (기초)']]),
         F('test', '시험 점수 (선택)', 'TOEFL 112, OPIc IH')
       ]
     },
@@ -186,7 +194,7 @@
         F('title', '발명 명칭', '', 'full'),
         F('inventors', '발명자', 'Hong, G., Kim, J.', 'full'),
         F('number', '출원/등록번호', 'KR 10-2023-0012345'),
-        F('pstatus', '상태', '', 'half', 'select', [['', '— 선택 —'], ['Granted', '등록 (Granted)'], ['Pending', '출원 (Pending)']]),
+        F('pstatus', '상태 (직접 입력 가능)', '예: Granted', 'half', 'combo', [['Granted', 'Granted (등록)'], ['Pending', 'Pending (출원)']]),
         F('date', '날짜', '2023')
       ]
     },
@@ -343,11 +351,38 @@
 
   /* ---------- 프로필 생성 ---------- */
   function emptyEntry(type) {
-    var e = {};
+    // id: 재렌더링/저장 후에도 바뀌지 않는 안정적 식별자 (data-entry-id 로 노출)
+    var e = { id: uid() };
     SECTION_DEFS[type].fields.forEach(function (f) {
-      e[f.key] = (f.type === 'select' && f.options && f.options.length) ? f.options[0][0] : '';
+      if (f.def != null) e[f.key] = f.def;
+      else if (f.type === 'select' && f.options && f.options.length) e[f.key] = f.options[0][0];
+      else e[f.key] = '';
     });
     return e;
+  }
+
+  // 학력 제목 앞에 흔히 직접 써 넣던 라벨 (예전 데이터 이관 및 이중 접두어 방지에 사용)
+  var THESIS_LABEL_RE = /^(Doctoral Dissertation|Master's Thesis|Master Thesis|Dissertation|Thesis|Capstone Project|Capstone|Graduation Work|Final Project|Honou?rs Thesis)\s*:\s*/i;
+
+  // 저장/가져온 데이터를 현재 스키마로 이관:
+  //  1) 각 항목에 안정적 id 부여
+  //  2) 학력: 예전엔 라벨 필드가 없어 제목에 "Dissertation: ..." 등을 직접 적었음 → 라벨을 분리해
+  //     드롭다운이 실제 접두어와 일치하도록(빈칸으로 보이지 않게) + 이중 접두어 방지
+  function migrateData(data) {
+    if (!data || !data.sections) return data;
+    data.sections.forEach(function (sec) {
+      (sec.entries || []).forEach(function (en) {
+        if (!en) return;
+        if (!en.id) en.id = uid();
+        if (sec.type === 'education' && en.thesisLabel == null) {
+          var t = trim(en.thesis);
+          var m = t && t.match(THESIS_LABEL_RE);
+          if (m) { en.thesisLabel = t.slice(0, m[0].length).replace(/\s*:\s*$/, ''); en.thesis = t.slice(m[0].length); }
+          else { en.thesisLabel = 'Dissertation'; }   // 예전 기본 동작 유지 + 드롭다운에 표시
+        }
+      });
+    });
+    return data;
   }
 
   function newSection(type, title, enabled) {
@@ -372,7 +407,7 @@
     var fields = SECTION_DEFS[type].fields;
     for (var i = 0; i < fields.length; i++) {
       var f = fields[i];
-      if (f.type === 'select') continue;
+      if (f.type === 'select' || f.type === 'combo') continue;
       if (trim(entry[f.key])) return false;
     }
     return true;
@@ -425,7 +460,27 @@
   var HEADS = {
     education: function (e) {
       var details = [];
-      if (trim(e.thesis)) details.push([RB('Dissertation: '), R(e.thesis)]);
+      if (trim(e.thesis)) {
+        var thesis = trim(e.thesis);
+        if (e.thesisLabel == null) {
+          // 예전 데이터(라벨 필드 없음, 주로 공개 뷰어): 제목 앞에 이미 라벨을 직접 써 둔 경우
+          // (예: "Graduation Work: ...", "Thesis: ...")는 그대로 두어 이중 접두어를 막고,
+          // 그렇지 않으면 기존 동작대로 "Dissertation:" 을 붙인다. (편집기는 migrateData가 라벨을 분리함)
+          var m = thesis.match(THESIS_LABEL_RE);
+          if (m) details.push([RB(thesis.slice(0, m[0].length)), R(thesis.slice(m[0].length))]);
+          else details.push([RB('Dissertation: '), R(thesis)]);
+        } else {
+          // 라벨은 사용자가 지정(Dissertation/Thesis/Capstone/직접 입력); 비우면 접두어 없이 제목만.
+          var tlabel = trim(e.thesisLabel);
+          if (tlabel) {
+            // 제목이 같은 라벨로 시작하면(직접 중복 입력) 이중 접두어 방지
+            var dup = new RegExp('^' + tlabel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*:\\s*', 'i');
+            details.push([RB(tlabel + ': '), R(thesis.replace(dup, ''))]);
+          } else {
+            details.push([R(thesis)]);
+          }
+        }
+      }
       if (trim(e.advisor)) details.push([RB('Advisor: '), R(e.advisor)]);
       if (trim(e.committee)) details.push([RB('Committee: '), R(e.committee)]);
       return {
@@ -564,8 +619,9 @@
       if (trim(e.doi)) runs.push(R(dot(e.doi) + ' '));
       var st = trim(e.status);
       if (st && st !== 'Published') {
-        var note = st === 'Accepted' ? 'Accepted, in press' : st === 'Under Review' ? 'Under review' : 'In preparation';
-        runs.push(RI('(' + note + ')'));
+        // 알려진 상태는 관례적 표기로, 직접 입력한 상태는 그대로 표시
+        var known = { 'Accepted': 'Accepted, in press', 'Under Review': 'Under review', 'In Preparation': 'In preparation' };
+        runs.push(RI('(' + (known[st] || st) + ')'));
       }
       if (trim(e.tags)) runs.push(R(' [' + trim(e.tags) + ']', { c: 'muted' }));
       return runs.length ? { cite: runs } : null;
@@ -813,6 +869,7 @@
     DEFAULT_SETTINGS: DEFAULT_SETTINGS, TEMPLATES: TEMPLATES,
     TEMPLATE_SPECS: TEMPLATE_SPECS, TEMPLATE_MIGRATE: TEMPLATE_MIGRATE, normalizeSettings: normalizeSettings,
     newProfileData: newProfileData, newSection: newSection, emptyEntry: emptyEntry,
+    migrateData: migrateData,
     isEntryEmpty: isEntryEmpty, nonEmptyEntries: nonEmptyEntries,
     sectionContent: sectionContent, contactLines: contactLines, sampleData: sampleData
   };

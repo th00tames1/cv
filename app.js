@@ -225,9 +225,22 @@
   var expanded = {};       // 섹션 접힘 상태 (메모리)
   var PERSONAL_ID = '__personal__';
 
+  // 한 항목에서 사용자가 채운 텍스트 칸 수 (드롭다운/직접입력 목록은 제외)
+  function fillStat(type, entry) {
+    var fields = (M.SECTION_DEFS[type] || {}).fields || [];
+    var tot = 0, fil = 0;
+    fields.forEach(function (f) {
+      if (f.type === 'select' || f.type === 'combo') return;
+      tot++;
+      if (M.trim(entry[f.key])) fil++;
+    });
+    return { fil: fil, tot: tot };
+  }
+
   /* ================= 에디터 렌더링 ================= */
   function renderEditor() {
     var d = P().data;
+    M.migrateData(d);          // 항목 id 보장(data-entry-id) + 예전 학력 라벨 분리
     var html = '';
 
     html += '<div class="editor-note">모든 섹션이 미리 준비되어 있습니다. 스위치로 켜고 끄고, 내용이 비어 있는 섹션은 미리보기와 Word 파일에서 자동으로 빠집니다.</div>';
@@ -252,8 +265,9 @@
     html += '<div class="fgrid">';
     M.PERSONAL_FIELDS.forEach(function (f) {
       var w = (f[0] === 'title') ? 'full' : 'half';
-      html += '<div class="fitem ' + w + '"><label>' + esc(f[1]) + '</label>';
-      html += '<input type="text" data-pfield="' + f[0] + '" value="' + esc(d.personal[f[0]] || '') + '" placeholder="' + esc(f[2]) + '">';
+      var pid = 'f-personal-' + f[0];
+      html += '<div class="fitem ' + w + '"><label for="' + pid + '">' + esc(f[1]) + '</label>';
+      html += '<input type="text" id="' + pid + '" data-pfield="' + f[0] + '" value="' + esc(d.personal[f[0]] || '') + '" placeholder="' + esc(f[2]) + '">';
       html += '</div>';
     });
     html += '</div></div></div>';
@@ -277,18 +291,21 @@
       html += '</div>';
       html += '<div class="card-body">';
       sec.entries.forEach(function (entry, ei) {
-        html += '<div class="entry-box">';
+        html += '<div class="entry-box" data-entry-id="' + entry.id + '" data-sec="' + sec.id + '">';
         if (!def.single) {
+          var fs = fillStat(sec.type, entry);
           html += '<div class="entry-tools">';
-          html += '<button class="mini-btn" data-act="entry-up" data-sec="' + sec.id + '" data-idx="' + ei + '" title="위로">↑</button>';
-          html += '<button class="mini-btn" data-act="entry-down" data-sec="' + sec.id + '" data-idx="' + ei + '" title="아래로">↓</button>';
-          html += '<button class="mini-btn del" data-act="entry-del" data-sec="' + sec.id + '" data-idx="' + ei + '" title="항목 삭제">✕</button>';
+          html += '<span class="entry-fill" data-entry-fill="' + entry.id + '" title="이 항목에서 채운 칸 수">' + fs.fil + '/' + fs.tot + ' 작성</span>';
+          html += '<button class="mini-btn" data-act="entry-up" data-sec="' + sec.id + '" data-idx="' + ei + '" title="위로" aria-label="이 항목 위로 이동">↑</button>';
+          html += '<button class="mini-btn" data-act="entry-down" data-sec="' + sec.id + '" data-idx="' + ei + '" title="아래로" aria-label="이 항목 아래로 이동">↓</button>';
+          html += '<button class="mini-btn del" data-act="entry-del" data-sec="' + sec.id + '" data-idx="' + ei + '" title="항목 삭제" aria-label="이 항목 삭제">✕</button>';
           html += '</div>';
         }
         html += '<div class="fgrid">';
         def.fields.forEach(function (f) {
-          html += '<div class="fitem ' + f.w + '"><label>' + esc(f.label) + '</label>';
-          var common = ' data-sec="' + sec.id + '" data-idx="' + ei + '" data-field="' + f.key + '"';
+          var fid = 'f-' + entry.id + '-' + f.key;
+          html += '<div class="fitem ' + f.w + '"><label for="' + fid + '">' + esc(f.label) + '</label>';
+          var common = ' id="' + fid + '" data-sec="' + sec.id + '" data-idx="' + ei + '" data-entry-id="' + entry.id + '" data-field="' + f.key + '"';
           var val = entry[f.key] == null ? '' : entry[f.key];
           if (f.type === 'textarea') {
             html += '<textarea' + common + ' placeholder="' + esc(f.ph) + '">' + esc(val) + '</textarea>';
@@ -298,6 +315,15 @@
               html += '<option value="' + esc(o[0]) + '"' + (val === o[0] ? ' selected' : '') + '>' + esc(o[1]) + '</option>';
             });
             html += '</select>';
+          } else if (f.type === 'combo') {
+            // 목록 + 직접 입력 겸용 (native combobox)
+            var listId = 'dl-' + entry.id + '-' + f.key;
+            html += '<input type="text"' + common + ' list="' + listId + '" value="' + esc(val) + '" placeholder="' + esc(f.ph) + '" autocomplete="off">';
+            html += '<datalist id="' + listId + '">';
+            (f.options || []).forEach(function (o) {
+              html += '<option value="' + esc(o[0]) + '">' + esc(o[1]) + '</option>';
+            });
+            html += '</datalist>';
           } else {
             html += '<input type="text"' + common + ' value="' + esc(val) + '" placeholder="' + esc(f.ph) + '">';
           }
@@ -306,7 +332,10 @@
         html += '</div></div>';
       });
       if (!def.single) {
-        html += '<button class="add-entry" data-act="entry-add" data-sec="' + sec.id + '">+ 항목 추가</button>';
+        // 접근성: aria-label은 화면에 보이는 문구("<ko> 추가")를 그대로 포함해야 함 (WCAG 2.5.3 Label in Name)
+        var addLabel = '+ ' + esc(def.ko) + ' 추가';
+        var addAria = esc(def.ko) + ' 추가 — ' + esc(sec.title || def.title) + ' 섹션에 항목 추가';
+        html += '<button class="add-entry" data-act="entry-add" data-sec="' + sec.id + '" data-add-for="' + sec.type + '" aria-label="' + addAria + '">' + addLabel + '</button>';
       }
       html += '</div></div>';
     });
@@ -319,6 +348,18 @@
     var arr = P().data.sections;
     for (var i = 0; i < arr.length; i++) if (arr[i].id === id) return { sec: arr[i], idx: i };
     return null;
+  }
+
+  // 새 항목 추가 후: 해당 항목으로 스크롤 + 첫 칸 포커스 + 잠깐 하이라이트
+  function focusNewEntry(id) {
+    var pane = el('editor-pane');
+    var box = pane.querySelector('[data-entry-id="' + id + '"]');
+    if (!box) return;
+    box.classList.add('entry-new');
+    try { box.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) { box.scrollIntoView(); }
+    var first = box.querySelector('input, textarea, select');
+    if (first) { try { first.focus({ preventScroll: true }); } catch (e2) { first.focus(); } }
+    setTimeout(function () { box.classList.remove('entry-new'); }, 1600);
   }
 
   /* 에디터 이벤트 (위임) */
@@ -338,6 +379,9 @@
         // 섹션 배지(작성된 항목 수) 실시간 갱신
         var badge = pane.querySelector('[data-card="' + t.dataset.sec + '"] .badge');
         if (badge) badge.textContent = M.nonEmptyEntries(f.sec).length;
+        // 항목별 "채운 칸 수" 실시간 갱신
+        var fillEl = pane.querySelector('[data-entry-fill="' + entry.id + '"]');
+        if (fillEl) { var fst = fillStat(f.sec.type, entry); fillEl.textContent = fst.fil + '/' + fst.tot + ' 작성'; }
       } else if (t.dataset.act === 'rename') {
         var f2 = findSection(t.dataset.sec);
         if (f2) f2.sec.title = t.value;
@@ -366,6 +410,7 @@
         var act = btn.dataset.act, secId = btn.dataset.sec, idx = +btn.dataset.idx;
         var f = secId ? findSection(secId) : null;
         var arr = P().data.sections;
+        var focusEntryId = null;   // 새로 추가한 항목 → 렌더 후 스크롤·포커스·하이라이트
         if (act === 'sec-up' && f && f.idx > 0) {
           arr.splice(f.idx - 1, 0, arr.splice(f.idx, 1)[0]);
         } else if (act === 'sec-down' && f && f.idx < arr.length - 1) {
@@ -374,8 +419,10 @@
           if (!confirm('이 커스텀 섹션을 삭제할까요?')) return;
           arr.splice(f.idx, 1);
         } else if (act === 'entry-add' && f) {
-          f.sec.entries.push(M.emptyEntry(f.sec.type));
+          var ne = M.emptyEntry(f.sec.type);
+          f.sec.entries.push(ne);
           expanded[secId] = true;
+          focusEntryId = ne.id;
         } else if (act === 'entry-del' && f) {
           // 내용이 있는 항목은 항상 확인 (항목이 하나뿐이어도 조용히 지우지 않음)
           if (!M.isEntryEmpty(f.sec.type, f.sec.entries[idx]) && !confirm('이 항목을 삭제할까요?')) return;
@@ -389,6 +436,7 @@
           var s = M.newSection('custom', 'New Section', true);
           P().data.sections.push(s);
           expanded[s.id] = true;
+          focusEntryId = s.entries[0] && s.entries[0].id;
         } else if (act === 'photo-pick') {
           el('photo-file').click();
           return;
@@ -400,6 +448,7 @@
           return;
         }
         scheduleSave(); renderEditor(); schedulePreview();
+        if (focusEntryId) focusNewEntry(focusEntryId);
         return;
       }
 
@@ -433,13 +482,108 @@
     page.innerHTML = r.empty
       ? '<div class="empty-hint">왼쪽에서 내용을 입력하면 여기에 CV가 실시간으로 표시됩니다.<br>상단의 [샘플 데이터] 버튼으로 예시를 채워볼 수도 있습니다.</div>'
       : r.html;
+    page._paper = r.paper;
+    page._empty = r.empty;
     setPrintPaper(prof.settings);
-    addPageMarkers({ paper: r.paper });
-    fitPreview();
-    // 사진 로드 후 높이 재계산
+    layoutPreview();
+    // 사진 로드 후 페이지 분할·높이 재계산
     page.querySelectorAll('img').forEach(function (img) {
-      if (!img.complete) img.addEventListener('load', fitPreview, { once: true });
+      if (!img.complete) img.addEventListener('load', layoutPreview, { once: true });
     });
+  }
+
+  // 미리보기 페이지 분할 + 배율 맞춤. 실제 인쇄(PDF)는 여백 있는 여러 장으로 나오므로,
+  // 편집기 미리보기도 페이지 사이에 실제 여백(위/아래)을 보여 준다(뒷장이 맨 위에 붙는 문제 해결).
+  function layoutPreview() {
+    var page = el('cv-page');
+    page.style.transform = '';   // 측정은 배율 1 상태에서
+    Array.prototype.forEach.call(page.querySelectorAll('.pg-spacer, .pagebreak-marker'), function (n) { n.remove(); });
+    if (!page._empty) {
+      var paper = PAPER_PX[page._paper || 'a4'] || PAPER_PX.a4;
+      // 2단(사이드바) 레이아웃은 열 분할이 어려워 경계선만 표시
+      if (page.querySelector('.cols')) addPageMarkers({ paper: page._paper });
+      else paginatePreview(page, paper);
+    }
+    fitPreview();
+  }
+
+  // 콘텐츠를 용지 높이에 맞춰 나누고, 페이지 경계마다 여백(spacer)을 끼워 넣는다.
+  // 인쇄와 비슷하게: 섹션의 (제목+첫 항목)은 함께 유지하고 둘째 항목부터 사이에서 나눈다.
+  // 인쇄 시 spacer는 숨겨진다(@media print).
+  function paginatePreview(page, paper) {
+    var cs = getComputedStyle(page);
+    var padTop = parseFloat(cs.paddingTop) || 0;
+    var padBottom = parseFloat(cs.paddingBottom) || 0;
+    var availH = paper.h - padTop - padBottom;
+    if (availH < 220) return;
+    if (page.scrollHeight <= paper.h + 2) return;   // 한 페이지면 분할 불필요
+
+    function isSec(el) { return !!(el.classList && el.classList.contains('cv-sec')); }
+
+    // 분할 지점: { before(이 요소 앞에서 나눔), test(넘침 판정 기준 요소) }
+    // 섹션은 제목+첫 항목을 함께 두고, 그리드 레이아웃(예: 2단 references) 섹션은 통째로 취급.
+    var pts = [];
+    Array.prototype.forEach.call(page.children, function (child) {
+      if (!child.classList || child.classList.contains('pg-spacer') || child.classList.contains('pagebreak-marker')) return;
+      if (isSec(child)) {
+        var disp = getComputedStyle(child).display;
+        var entries = Array.prototype.filter.call(child.children, function (gc) { return gc.tagName !== 'H2'; });
+        if (/grid|flex/.test(disp) || entries.length <= 1) {
+          pts.push({ before: child, test: child });                 // 통째로
+        } else {
+          pts.push({ before: child, test: entries[0] });            // 제목+첫 항목이 안 들어가면 통째로 넘김
+          for (var k = 1; k < entries.length; k++) pts.push({ before: entries[k], test: entries[k] });
+        }
+      } else {
+        pts.push({ before: child, test: child });
+      }
+    });
+
+    var GUTTER = 26;                                 // 시트 사이 회색 간격
+    var pageTop = page.getBoundingClientRect().top;
+    var curBottom = pageTop + padTop + availH;        // 현재 페이지 콘텐츠 하단(화면 y)
+    var firstOnPage = 0, pageNo = 1, guard = 0;
+
+    // 방금 배치된 블록 이후의 다음 페이지 하단(화면 y). 한 페이지보다 큰 리프는 페이지 경계를 넘겨 잡는다.
+    function bottomAfter(before, topY) {
+      var b = topY + availH;
+      if (!isSec(before)) {   // 섹션은 내부 항목이 따로 분할되므로 그대로, 리프만 넘김 처리
+        var bot = before.getBoundingClientRect().bottom, g = 0;
+        while (bot > b + 0.5 && g++ < 40) b += availH;
+      }
+      return b;
+    }
+
+    for (var i = 0; i < pts.length && guard < 80; i++) {
+      var p = pts[i];
+      var tr = p.test.getBoundingClientRect();
+      if (tr.height === 0) continue;
+      if (tr.bottom <= curBottom + 0.5) continue;      // 현재 페이지에 들어감
+      if (i === firstOnPage) {                          // 첫 블록이라 앞에서 못 나눔 → 다음 경계만 갱신
+        curBottom = bottomAfter(p.before, p.before.getBoundingClientRect().top);
+        firstOnPage = i + 1; continue;
+      }
+      guard++;
+      var br = p.before.getBoundingClientRect();
+      // p.before 앞에서 페이지 나눔: 이전 페이지 남은 여백 + 시트 간격 + 다음 페이지 위 여백
+      var h = (curBottom + padBottom + GUTTER + padTop) - br.top;
+      if (h < GUTTER + 8) h = GUTTER + 8;              // 최소한 거터+라벨은 보이게
+      var grayEnd = Math.max(padTop + 2, Math.min(h - 2, h - padTop));   // 다음 시트 위 여백 시작
+      var whiteBot = Math.max(0, Math.min(grayEnd - 2, h - GUTTER - padTop)); // 이전 시트 끝(흰색)
+      var spacer = document.createElement('div');
+      spacer.className = 'pg-spacer';
+      spacer.style.height = h + 'px';
+      spacer.style.background = 'linear-gradient(to bottom, #fff 0, #fff ' + whiteBot + 'px, #e9ecf1 ' + whiteBot + 'px, #e9ecf1 ' + grayEnd + 'px, #fff ' + grayEnd + 'px, #fff 100%)';
+      var lbl = document.createElement('div');
+      lbl.className = 'pg-gaplabel';
+      lbl.style.top = ((whiteBot + grayEnd) / 2) + 'px';
+      lbl.textContent = pageNo + '페이지 끝 · ' + (pageNo + 1) + '페이지 시작';
+      spacer.appendChild(lbl);
+      p.before.parentNode.insertBefore(spacer, p.before);
+      pageNo++;
+      curBottom = bottomAfter(p.before, p.before.getBoundingClientRect().top);
+      firstOnPage = i;
+    }
   }
 
   function fitPreview() {
