@@ -836,10 +836,11 @@
       if (icon) it.icon = icon;
       arr.push(it);
     }
-    add(line1, p.email, trim(p.email) ? 'mailto:' + trim(p.email) : '', 'mail');
-    add(line1, p.phone, trim(p.phone) ? 'tel:' + trim(p.phone).replace(/[^+\d]/g, '') : '', 'phone');
+    // 1줄(이메일·전화·주소)은 내용만으로 무엇인지 알 수 있어 아이콘을 붙이지 않는다.
+    add(line1, p.email, trim(p.email) ? 'mailto:' + trim(p.email) : '', '');
+    add(line1, p.phone, trim(p.phone) ? 'tel:' + trim(p.phone).replace(/[^+\d]/g, '') : '', '');
     add(line1, p.pronouns, '', '');
-    add(line1, p.address, '', 'pin');
+    add(line1, p.address, '', '');
 
     // 웹사이트는 라벨 모드에서도 도메인을 남긴다(짧고 본인 식별에 쓰이므로)
     if (trim(p.website)) add(line2, labelMode ? hostOnly(p.website) : stripUrl(p.website), webHref(p.website), 'globe');
