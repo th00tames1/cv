@@ -41,12 +41,12 @@
         F('period', '기간 (재학 중이면 Expected 사용)', 'Expected May 2027'),
         F('gpa', 'GPA', 'GPA 3.95/4.0'),
         F('advisor', '지도교수', 'Prof. Jane Kim'),
-        F('thesisLabel', '논문/작품 라벨 (앞에 붙는 말 · 직접 입력 가능)', '예: Dissertation', 'half', 'combo',
+        F('thesisLabel', '논문·작품 라벨 (직접 입력 가능)', '예: Dissertation', 'half', 'combo',
           [['Dissertation', 'Dissertation (박사 학위논문)'], ['Thesis', 'Thesis (석사 학위논문)'],
            ['Master\'s Thesis', 'Master\'s Thesis'], ['Doctoral Dissertation', 'Doctoral Dissertation'],
            ['Capstone Project', 'Capstone Project (캡스톤)'], ['Graduation Work', 'Graduation Work (졸업작품)'],
            ['Final Project', 'Final Project'], ['', '(라벨 없음 / None)']], 'Dissertation'),
-        F('thesis', '논문/졸업작품 제목', '예: Real-time forest slash pile volume estimation', 'full'),
+        F('thesis', '논문·졸업작품 제목', '예: Real-time forest slash pile volume estimation', 'full'),
         F('committee', '논문 심사위원 (선택)', 'Prof. A, Prof. B, Prof. C', 'full'),
         F('notes', '추가 사항 (한 줄에 하나씩)', '', 'full', 'textarea')
       ]
@@ -209,7 +209,7 @@
       ]
     },
     custom: {
-      title: 'Additional Information', ko: '커스텀 섹션',
+      title: 'Additional Information', ko: '사용자 지정',
       fields: [
         F('heading', '제목', ''),
         F('sub', '부제목', ''),
@@ -258,7 +258,7 @@
     },
     moderncv: {
       label: 'ModernCV — LaTeX 표준 (CTAN/Overleaf)',
-      desc: '2006년부터 모든 TeX 배포판에 포함된 "그 LaTeX CV". 왼쪽 날짜 열 + 파란 섹션 바.',
+      desc: '2006년부터 모든 TeX 배포판에 포함된 표준 LaTeX 이력서. 왼쪽 날짜 열과 파란 섹션 바.',
       layout: 'left-dates', entryStyle: 'inline', paper: 'a4', contactRight: true,
       photo: true, photoIn: 'head', photoShape: 'framed', photoSize: 96,
       accent: '#3873B3',
@@ -266,8 +266,8 @@
       nameStyle: 'two-tone'
     },
     awesome: {
-      label: 'Awesome CV — GitHub 28k★ 최고 인기',
-      desc: 'posquit0 Awesome-CV. 가는 이름+굵은 성, 섹션 첫 3글자 강조색. 개발자 CV의 대명사.',
+      label: 'Awesome CV — GitHub 인기 개발자 이력서',
+      desc: 'posquit0의 Awesome-CV. 가는 이름과 굵은 성, 섹션 첫 세 글자 강조색. 개발자 이력서를 대표하는 양식.',
       layout: 'single', entryStyle: 'awesome', paper: 'a4', headingFirst3: true,
       accent: '#DC3522',
       swatches: ['#DC3522', '#00A388', '#0395DE', '#EF4089', '#FF6138', '#27AE60', '#95A5A6', '#131A28'],
@@ -275,7 +275,7 @@
     },
     altacv: {
       label: 'AltaCV — Marissa Mayer 스타일 2단',
-      desc: '유명한 마리사 메이어 이력서를 재현한 LaTeX 인기 양식. 원형 사진, 오른쪽 사이드바, 점선 구분선.',
+      desc: '마리사 메이어 이력서를 재현한 LaTeX 양식. 원형 사진, 오른쪽 사이드바, 점선 구분선.',
       layout: 'sidebar', entryStyle: 'altacv', paper: 'a4',
       accent: '#8F0D0D', swatches: ['#8F0D0D', '#450808', '#0000B3', '#2E6B47', '#584B8C'],
       photo: true, photoIn: 'head', photoShape: 'circle',
@@ -285,7 +285,7 @@
     },
     europass: {
       label: 'Europass — EU 공식 (2020+ 현행)',
-      desc: 'EU 공식 CV 빌더의 현행 기본형(Formal). 회색 헤더 밴드, 대문자 섹션 + 가는 밑줄. 수천만 건 작성된 공식 양식.',
+      desc: 'EU 공식 CV 빌더의 현행 기본형(Formal). 회색 헤더 밴드, 대문자 섹션과 가는 밑줄. 유럽 표준 공식 양식.',
       layout: 'single', entryStyle: 'europass', paper: 'a4',
       accent: '#004B80', swatches: ['#004B80', '#4D9ACB', '#0D5942', '#3B9E80', '#6C3088', '#C65094'],
       photo: true, photoIn: 'head', photoShape: 'circle', photoSize: 86, nameStyle: 'plain'
@@ -298,15 +298,15 @@
       photo: false, nameStyle: 'plain'
     },
     jake: {
-      label: "Jake's Resume — 테크 업계 최고 인기",
+      label: "Jake's Resume — 개발자 이력서 표준",
       desc: 'Overleaf/GitHub 개발자 이력서 표준(jakegut/resume). 스몰캡스 섹션 + 얇은 밑줄, 촘촘한 불릿, 0.5인치 여백.',
       layout: 'single', entryStyle: 'title-first', entryStyleEdu: 'org-first', paper: 'letter',
       accent: '#000000', swatches: ['#000000'],
       photo: false, nameStyle: 'smallcaps'
     },
     stockholm: {
-      label: 'Stockholm — Resume.io 1,700만+ 사용',
-      desc: 'Resume.io(현 Essential)의 세계 최다 사용 템플릿. 2단 화이트, 차콜 제목, 파란 스킬 바.',
+      label: 'Stockholm — Resume.io 대표 템플릿',
+      desc: 'Resume.io(현 Essential)의 대표 템플릿. 2단 화이트, 차콜 제목, 파란 스킬 바.',
       layout: 'sidebar', entryStyle: 'stockholm', paper: 'a4',
       accent: '#3095D5', swatches: ['#3095D5', '#E44C4C', '#20C997', '#7950F2', '#F59F00', '#343A40'],
       side: ['skills', 'languages'], sideWidgets: { languages: 'bars' },
@@ -314,7 +314,7 @@
     },
     cascade: {
       label: 'Cascade — Zety 대표 (네이비 사이드바)',
-      desc: 'Zety에서 150만+ 명이 쓴 대표 템플릿. 네이비 사이드바에 인적사항·스킬, 흰 본문.',
+      desc: 'Zety의 대표 템플릿. 네이비 사이드바에 인적사항·스킬, 흰 본문.',
       layout: 'sidebar', sideLeft: true, headerIn: 'side', entryStyle: 'title-first', paper: 'a4',
       accent: '#1F4E79', swatches: ['#1F4E79', '#163A57', '#343A40', '#0F6674', '#7A263A', '#2E5E33'],
       side: ['skills', 'languages', 'certifications', 'memberships'],
@@ -322,7 +322,7 @@
     },
     canva: {
       label: 'Canva Style — 파스텔 사이드바',
-      desc: 'Canva(월 2.6억 사용자) 이력서 템플릿의 대표 미학. 연회색 사이드바, 자간 넓은 대문자 이름, 얇은 구분선.',
+      desc: 'Canva 이력서 템플릿의 대표적인 미학. 연회색 사이드바, 자간 넓은 대문자 이름, 얇은 구분선.',
       layout: 'sidebar', entryStyle: 'title-first', paper: 'a4',
       accent: '#4A6FA5', swatches: ['#4A6FA5', '#8A9BA8', '#C77E6F', '#6B8F71', '#9A7AA0', '#37474F'],
       side: ['skills', 'languages', 'certifications', 'memberships'],

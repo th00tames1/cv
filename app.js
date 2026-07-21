@@ -52,9 +52,9 @@
       localStorage.setItem(LS_KEY, JSON.stringify(store));
       var d = new Date();
       var hh = ('0' + d.getHours()).slice(-2), mm = ('0' + d.getMinutes()).slice(-2), ss = ('0' + d.getSeconds()).slice(-2);
-      el('save-status').textContent = '✓ 저장됨 ' + hh + ':' + mm + ':' + ss + (fsync.linked && fsync.granted ? ' · 파일 동기화' : '');
+      el('save-status').textContent = '✓ 저장됨 ' + hh + ':' + mm + ':' + ss + (fsync.linked && fsync.granted ? ' · 파일 동기화 중' : '');
     } catch (e) {
-      el('save-status').textContent = '⚠ 저장 실패 (브라우저 저장공간 확인)';
+      el('save-status').textContent = '⚠ 저장 실패 — 브라우저 저장 공간을 확인하세요';
     }
     scheduleFileWrite();
   }
@@ -107,7 +107,7 @@
         console.warn('파일 동기화 쓰기 실패:', e);
         fsync.granted = false;
         renderFsyncButton();
-        el('save-status').textContent = '⚠ 파일 동기화 실패 — [파일 다시 연결] 버튼을 눌러 주세요';
+        el('save-status').textContent = '⚠ 파일 동기화 실패 — [파일 다시 연결]을 눌러 주세요';
       });
   }
 
@@ -157,9 +157,9 @@
       b.title = 'Box 등 동기화 폴더의 JSON 파일에 자동 저장하면 다른 컴퓨터에서도 이어서 작성할 수 있습니다';
     } else if (!fsync.granted) {
       b.textContent = '⚠ 파일 다시 연결';
-      b.title = '브라우저를 다시 열면 권한 확인이 한 번 필요합니다. 클릭해서 다시 연결하세요';
+      b.title = '브라우저를 다시 열면 권한 확인이 한 번 필요합니다. 클릭하여 다시 연결하세요.';
     } else {
-      b.textContent = '🔗 파일 동기화 중';
+      b.textContent = '파일 동기화 중';
       b.title = '자동 저장 중입니다. 클릭하면 동기화를 해제합니다';
     }
   }
@@ -179,7 +179,7 @@
           return idbSet('handle', handle).then(reconcileSyncFile).then(renderFsyncButton);
         }).catch(function (e) {
           if (e && e.name !== 'AbortError') {
-            alert('이 브라우저 환경에서는 파일 연결을 사용할 수 없습니다.\n(' + e.message + ')\nJSON 내보내기/가져오기를 대신 사용하세요.');
+            alert('이 브라우저에서는 파일 연결을 사용할 수 없습니다.\n(' + e.message + ')\nJSON 내보내기·가져오기를 이용하세요.');
           }
         });
       } else if (!fsync.granted) {
@@ -190,7 +190,7 @@
           }
         });
       } else {
-        if (!confirm('파일 자동 저장을 해제할까요? (파일은 삭제되지 않습니다)')) return;
+        if (!confirm('파일 자동 저장을 해제하시겠습니까? 파일은 삭제되지 않습니다.')) return;
         fsync.handle = null; fsync.linked = false; fsync.granted = false;
         idbDel('handle').then(renderFsyncButton);
       }
@@ -243,24 +243,24 @@
     M.migrateData(d);          // 항목 id 보장(data-entry-id) + 예전 학력 라벨 분리
     var html = '';
 
-    html += '<div class="editor-note">모든 섹션이 미리 준비되어 있습니다. 스위치로 켜고 끄고, 내용이 비어 있는 섹션은 미리보기와 Word 파일에서 자동으로 빠집니다.</div>';
+    html += '<div class="editor-note">모든 섹션이 기본 포함됩니다. 스위치로 포함 여부를 조절하며, 내용이 없는 섹션은 미리보기와 Word 출력에서 자동 제외됩니다.</div>';
 
     /* 인적사항 카드 */
     var pOpen = expanded[PERSONAL_ID] !== false;
     html += '<div class="card' + (pOpen ? '' : ' collapsed') + '" data-card="' + PERSONAL_ID + '">';
     html += '<div class="card-head" data-act="collapse" data-sec="' + PERSONAL_ID + '">';
     html += '<span class="chev">' + (pOpen ? '▼' : '▶') + '</span>';
-    html += '<span style="flex:1;font-weight:600;">인적사항 / 연락처</span><span class="ko-label">Personal Info</span>';
+    html += '<span style="flex:1;font-weight:600;">인적사항·연락처</span><span class="ko-label">Personal Info</span>';
     html += '</div><div class="card-body">';
     html += '<div class="photo-row">';
     if (d.personal.photo) {
-      html += '<img class="photo-thumb" data-act="photo-pick" title="클릭해서 사진 변경" src="' + d.personal.photo + '" alt="photo">';
+      html += '<img class="photo-thumb" data-act="photo-pick" title="클릭하여 사진 변경" src="' + d.personal.photo + '" alt="photo">';
     } else {
-      html += '<div class="photo-thumb empty" data-act="photo-pick" title="클릭해서 사진 업로드">👤</div>';
+      html += '<div class="photo-thumb empty" data-act="photo-pick" title="클릭하여 사진 업로드">👤</div>';
     }
     html += '<button class="tb-btn" style="color:#2c3648;background:#eef1f6;border-color:#d6dbe3" data-act="photo-pick" type="button">사진 업로드</button>';
     if (d.personal.photo) html += '<button class="mini-btn del" data-act="photo-del" title="사진 제거" type="button">✕</button>';
-    html += '<span class="photo-hint">📷 지원: 10종 중 7종 + 공개 페이지 상단 (Harvard·Banking·Jake\'s는 미국 관행상 사진 없음)</span>';
+    html += '<span class="photo-hint">10개 템플릿 중 7개와 공개 페이지 상단에서 지원됩니다. Harvard·Banking·Jake\'s는 관례상 사진을 넣지 않습니다.</span>';
     html += '</div>';
     html += '<div class="fgrid">';
     M.PERSONAL_FIELDS.forEach(function (f) {
@@ -281,8 +281,8 @@
       html += '<div class="card' + (open ? '' : ' collapsed') + (sec.enabled ? '' : ' off') + '" data-card="' + sec.id + '">';
       html += '<div class="card-head" data-act="collapse" data-sec="' + sec.id + '">';
       html += '<span class="chev">' + (open ? '▼' : '▶') + '</span>';
-      html += '<label class="switch" title="CV에 포함/제외" data-stop="1"><input type="checkbox" data-act="toggle" data-sec="' + sec.id + '"' + (sec.enabled ? ' checked' : '') + '><span class="knob"></span></label>';
-      html += '<input class="sec-title" data-stop="1" data-act="rename" data-sec="' + sec.id + '" value="' + esc(sec.title) + '" title="섹션 제목 (CV에 표시됨)">';
+      html += '<label class="switch" title="CV 포함 여부" data-stop="1"><input type="checkbox" data-act="toggle" data-sec="' + sec.id + '"' + (sec.enabled ? ' checked' : '') + '><span class="knob"></span></label>';
+      html += '<input class="sec-title" data-stop="1" data-act="rename" data-sec="' + sec.id + '" value="' + esc(sec.title) + '" title="섹션 제목 (CV에 표시)">';
       html += '<span class="ko-label">' + esc(def.ko) + '</span>';
       html += '<span class="badge" title="작성된 항목 수">' + n + '</span>';
       html += '<button class="mini-btn" data-act="sec-up" data-sec="' + sec.id + '" title="위로">↑</button>';
@@ -295,7 +295,7 @@
         if (!def.single) {
           var fs = fillStat(sec.type, entry);
           html += '<div class="entry-tools">';
-          html += '<span class="entry-fill" data-entry-fill="' + entry.id + '" title="이 항목에서 채운 칸 수">' + fs.fil + '/' + fs.tot + ' 작성</span>';
+          html += '<span class="entry-fill" data-entry-fill="' + entry.id + '" title="입력한 칸 수">입력 ' + fs.fil + '/' + fs.tot + '</span>';
           html += '<button class="mini-btn" data-act="entry-up" data-sec="' + sec.id + '" data-idx="' + ei + '" title="위로" aria-label="이 항목 위로 이동">↑</button>';
           html += '<button class="mini-btn" data-act="entry-down" data-sec="' + sec.id + '" data-idx="' + ei + '" title="아래로" aria-label="이 항목 아래로 이동">↓</button>';
           html += '<button class="mini-btn del" data-act="entry-del" data-sec="' + sec.id + '" data-idx="' + ei + '" title="항목 삭제" aria-label="이 항목 삭제">✕</button>';
@@ -340,7 +340,7 @@
       html += '</div></div>';
     });
 
-    html += '<button id="add-custom" data-act="custom-add">+ 커스텀 섹션 추가</button>';
+    html += '<button id="add-custom" data-act="custom-add">+ 사용자 지정 섹션 추가</button>';
     el('editor-pane').innerHTML = html;
   }
 
@@ -381,7 +381,7 @@
         if (badge) badge.textContent = M.nonEmptyEntries(f.sec).length;
         // 항목별 "채운 칸 수" 실시간 갱신
         var fillEl = pane.querySelector('[data-entry-fill="' + entry.id + '"]');
-        if (fillEl) { var fst = fillStat(f.sec.type, entry); fillEl.textContent = fst.fil + '/' + fst.tot + ' 작성'; }
+        if (fillEl) { var fst = fillStat(f.sec.type, entry); fillEl.textContent = '입력 ' + fst.fil + '/' + fst.tot; }
       } else if (t.dataset.act === 'rename') {
         var f2 = findSection(t.dataset.sec);
         if (f2) f2.sec.title = t.value;
@@ -416,7 +416,7 @@
         } else if (act === 'sec-down' && f && f.idx < arr.length - 1) {
           arr.splice(f.idx + 1, 0, arr.splice(f.idx, 1)[0]);
         } else if (act === 'sec-del' && f) {
-          if (!confirm('이 커스텀 섹션을 삭제할까요?')) return;
+          if (!confirm('이 사용자 지정 섹션을 삭제하시겠습니까?')) return;
           arr.splice(f.idx, 1);
         } else if (act === 'entry-add' && f) {
           var ne = M.emptyEntry(f.sec.type);
@@ -425,7 +425,7 @@
           focusEntryId = ne.id;
         } else if (act === 'entry-del' && f) {
           // 내용이 있는 항목은 항상 확인 (항목이 하나뿐이어도 조용히 지우지 않음)
-          if (!M.isEntryEmpty(f.sec.type, f.sec.entries[idx]) && !confirm('이 항목을 삭제할까요?')) return;
+          if (!M.isEntryEmpty(f.sec.type, f.sec.entries[idx]) && !confirm('이 항목을 삭제하시겠습니까?')) return;
           if (f.sec.entries.length === 1) f.sec.entries = [M.emptyEntry(f.sec.type)];
           else f.sec.entries.splice(idx, 1);
         } else if (act === 'entry-up' && f && idx > 0) {
@@ -480,7 +480,7 @@
     page.className = r.className;
     page.style.setProperty('--accent', r.accent);
     page.innerHTML = r.empty
-      ? '<div class="empty-hint">왼쪽에서 내용을 입력하면 여기에 CV가 실시간으로 표시됩니다.<br>상단의 [샘플 데이터] 버튼으로 예시를 채워볼 수도 있습니다.</div>'
+      ? '<div class="empty-hint">왼쪽에 내용을 입력하면 CV가 실시간으로 표시됩니다.<br>상단 [샘플 데이터]로 예시를 채워 볼 수 있습니다.</div>'
       : r.html;
     page._paper = r.paper;
     page._empty = r.empty;
@@ -577,7 +577,7 @@
       var lbl = document.createElement('div');
       lbl.className = 'pg-gaplabel';
       lbl.style.top = ((whiteBot + grayEnd) / 2) + 'px';
-      lbl.textContent = pageNo + '페이지 끝 · ' + (pageNo + 1) + '페이지 시작';
+      lbl.textContent = '페이지 경계 (' + pageNo + ' → ' + (pageNo + 1) + ')';
       spacer.appendChild(lbl);
       p.before.parentNode.insertBefore(spacer, p.before);
       pageNo++;
@@ -640,7 +640,7 @@
     });
 
     el('btn-del').addEventListener('click', function () {
-      if (!confirm('"' + P().name + '" CV를 삭제할까요? 되돌릴 수 없습니다.')) return;
+      if (!confirm('"' + P().name + '" CV를 삭제하시겠습니까? 되돌릴 수 없습니다.')) return;
       var id = store.currentId;
       store.profiles = store.profiles.filter(function (pr) { return pr.id !== id; });
       if (!store.profiles.length) store.profiles.push(newProfile('내 CV'));
@@ -649,7 +649,7 @@
 
     el('btn-sample').addEventListener('click', function () {
       // 기존 CV를 덮어쓰지 않고 새 프로필로 추가 (데이터 손실 방지)
-      var pr = newProfile('샘플 CV (예시)', M.sampleData());
+      var pr = newProfile('샘플 CV', M.sampleData());
       pr.settings.boldName = 'Hong, G.';
       store.profiles.push(pr);
       switchProfile(pr.id);
@@ -812,7 +812,7 @@
       var m = document.createElement('div');
       m.className = 'pagebreak-marker';
       m.style.top = (n * paper.h) + 'px';
-      m.innerHTML = '<span>≈ ' + n + '페이지 끝</span>';
+      m.innerHTML = '<span>페이지 ' + n + ' 경계</span>';
       page.appendChild(m);
     }
   }
@@ -916,7 +916,7 @@
   function publishViaGitHub() {
     if (cvIsEmpty(P())) { pubStatus('빈 CV는 게시할 수 없습니다. 내용을 작성하거나 다른 프로필을 선택하세요.'); return; }
     var pat = el('pub-pat').value.trim() || localStorage.getItem('cvbuilder.pat') || '';
-    if (!pat) { pubStatus('GitHub 토큰을 입력하세요 (아래 안내 참고)'); return; }
+    if (!pat) { pubStatus('GitHub 토큰을 입력하세요. 아래 안내를 참고하세요.'); return; }
     localStorage.setItem('cvbuilder.pat', pat);
     el('pub-pat').value = '';
     renderPubModal();
@@ -936,7 +936,7 @@
           localStorage.setItem('cvbuilder.lastPublish', new Date().toISOString());
           renderPubModal();
           var url = 'https://' + GH.owner + '.github.io/' + GH.repo + '/';
-          el('pub-status').innerHTML = '✓ 게시 완료! 보통 1~2분, 길면 10분쯤 뒤 <a href="' + url + '" target="_blank" rel="noopener">공개 페이지</a>에 반영됩니다.';
+          el('pub-status').innerHTML = '✓ 게시가 완료되었습니다. 보통 1~2분, 늦으면 약 10분 후 <a href="' + url + '" target="_blank" rel="noopener">공개 페이지</a>에 반영됩니다.';
           el('pub-status').style.color = '#1a7f37';
         } else if (r.status === 401) {
           pubStatus('토큰이 유효하지 않습니다 (401). 새 토큰을 입력하세요.');
@@ -952,7 +952,7 @@
 
   function renderPubModal() {
     var hasPat = !!localStorage.getItem('cvbuilder.pat');
-    el('pub-pat-state').textContent = hasPat ? '✓ 토큰 저장됨 (다시 입력할 필요 없음)' : '저장된 토큰 없음';
+    el('pub-pat-state').textContent = hasPat ? '✓ 토큰이 저장되어 있습니다' : '저장된 토큰 없음';
     el('btn-pat-del').style.display = hasPat ? '' : 'none';
     var last = localStorage.getItem('cvbuilder.lastPublish');
     var lastTxt = last ? '마지막 게시: ' + new Date(last).toLocaleString('sv-SE').slice(0, 16) : '아직 게시한 적이 없습니다.';

@@ -81,7 +81,7 @@
     if (location.protocol === 'file:') {
       // 로컬에서는 게시본을 읽을 수 없음 — 안내 문구 교체
       var box = document.querySelector('.ve-box p');
-      if (box) box.textContent = '로컬에서는 편집 페이지(edit.html)를 사용하세요. 게시본은 인터넷 사이트에서만 표시됩니다.';
+      if (box) box.textContent = '로컬에서는 편집 페이지(edit.html)를 사용하세요. 게시본은 웹사이트에서만 표시됩니다.';
     }
   }
 
@@ -111,7 +111,7 @@
   }
   function ensureDocx() {
     if (window.CVDocx) return Promise.resolve();
-    return loadScript('docx.iife.js').then(function () { return loadScript('docx-export.js?v=15'); });
+    return loadScript('docx.iife.js').then(function () { return loadScript('docx-export.js?v=16'); });
   }
 
   function setPrintPaper(settings) {

@@ -5,22 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
   <title>Editor</title>
-  <link rel="stylesheet" href="styles.css?v=15">
+  <link rel="stylesheet" href="styles.css?v=16">
   <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'&gt;&lt;text y='.9em' font-size='90'&gt;📄&lt;/text&gt;&lt;/svg&gt;">
 </head>
 <body>
   <div id="topbar">
     <span class="logo">📄 CV <span>Builder</span></span>
     <select id="profile-select" title="저장된 CV 선택"></select>
-    <button class="tb-btn" id="btn-new">＋ 새 CV</button>
+    <button class="tb-btn" id="btn-new">새 CV</button>
     <button class="tb-btn" id="btn-dup">복제</button>
     <button class="tb-btn" id="btn-rename">이름 변경</button>
     <button class="tb-btn danger" id="btn-del">삭제</button>
-    <button class="tb-btn" id="btn-sample" title="박사과정+경력 예시 데이터로 채우기">샘플 데이터</button>
-    <button class="tb-btn" id="btn-json-export" title="백업/이동용 JSON 파일로 저장">JSON 내보내기</button>
+    <button class="tb-btn" id="btn-sample" title="예시 데이터로 채웁니다 (박사과정·경력 샘플)">샘플 데이터</button>
+    <button class="tb-btn" id="btn-json-export" title="백업·이동용 JSON 파일로 저장">JSON 내보내기</button>
     <button class="tb-btn" id="btn-json-import" title="JSON 파일에서 CV 불러오기">JSON 가져오기</button>
     <button class="tb-btn" id="btn-fsync"></button>
-    <button class="tb-btn" id="btn-publish" style="background:#1a7f37;border-color:#2ea043" title="현재 CV를 공개 페이지에 게시">🌐 게시</button>
+    <button class="tb-btn" id="btn-publish" style="background:#1a7f37;border-color:#2ea043" title="현재 CV를 공개 페이지에 게시">게시</button>
     <input type="file" id="json-file" accept=".json,application/json" style="display:none">
     <input type="file" id="photo-file" accept="image/*" style="display:none">
     <span id="save-status"></span>
@@ -35,8 +35,8 @@
         <select id="ctl-template"></select>
         <button class="tb-btn" id="btn-gallery" style="color:#2c3648;background:#eef1f6;border-color:#d6dbe3">갤러리</button>
         <label>강조색</label>
-        <input type="color" id="ctl-accent" title="템플릿 포인트 색상">
-        <span id="swatches" title="이 양식의 공식 색상 팔레트"></span>
+        <input type="color" id="ctl-accent" title="템플릿 강조 색상">
+        <span id="swatches" title="템플릿 기본 색상 팔레트"></span>
         <label>글자 크기</label>
         <select id="ctl-size">
           <option value="small">작게</option>
@@ -50,9 +50,9 @@
           <option value="relaxed">넓게</option>
         </select>
         <label>이름 굵게</label>
-        <input type="text" id="ctl-boldname" placeholder="예: Hong, G.; G. Hong" title="논문/발표 저자 목록에서 굵게 표시할 본인 이름 표기 (여러 개는 ; 로 구분)">
+        <input type="text" id="ctl-boldname" placeholder="예: Hong, G.; G. Hong" title="논문·발표 저자 목록에서 본인 이름을 굵게 표시합니다. 여러 표기는 ; 로 구분하세요.">
         <span class="ph-spacer"></span>
-        <button class="action-btn" id="btn-print" title="브라우저 인쇄 → PDF로 저장 가능">인쇄 / PDF</button>
+        <button class="action-btn" id="btn-print" title="브라우저 인쇄 기능으로 PDF 저장이 가능합니다.">인쇄 / PDF</button>
         <button class="action-btn primary" id="btn-docx">Word로 내보내기 (.docx)</button>
       </div>
       <div id="preview-scroll">
@@ -67,7 +67,7 @@
     <div class="modal-box">
       <div class="modal-head">
         <h3>템플릿 갤러리</h3>
-        <span class="sub">실제로 널리 쓰이는 양식들을 원본 그대로 재현했습니다. 클릭하면 즉시 적용됩니다 (내용 유지).</span>
+        <span class="sub">널리 쓰이는 양식을 원본에 가깝게 재현했습니다. 선택하면 내용을 유지한 채 즉시 적용됩니다.</span>
         <button class="modal-close" id="tpl-modal-close">✕</button>
       </div>
       <div id="tpl-grid"></div>
@@ -81,19 +81,19 @@
         <button class="modal-close" id="pub-modal-close">✕</button>
       </div>
       <p class="pub-warn">⚠ 게시하면 현재 CV의 <b>모든 내용(이메일·전화번호 포함)</b>이
-        공개 페이지에서 누구나 볼 수 있게 됩니다. 공개하고 싶지 않은 정보는 지우거나,
+        공개 페이지에 노출되어 누구나 열람할 수 있습니다. 공개를 원치 않는 정보는 삭제하거나,
         [복제]로 공개용 버전을 따로 만들어 게시하세요.</p>
       <div class="pub-row">
         <label>GitHub 토큰 (Fine-grained PAT)</label>
         <input type="password" id="pub-pat" placeholder="github_pat_..." autocomplete="off">
         <span id="pub-pat-state" class="pub-hint"></span>
       </div>
-      <p class="pub-hint">토큰 만들기: GitHub → Settings → Developer settings → Fine-grained tokens →
-        Repository: <b>cv</b>만 선택 → Permissions: <b>Contents = Read and write</b>.
-        토큰은 이 브라우저에만 저장되며 외부로 전송되지 않습니다 (GitHub API 호출에만 사용).</p>
+      <p class="pub-hint">토큰 생성: GitHub → Settings → Developer settings → Fine-grained tokens →
+        Repository는 <b>cv</b>만 선택 → Permissions에서 <b>Contents = Read and write</b>.
+        토큰은 이 브라우저에만 저장되며 외부로 전송되지 않습니다(GitHub API 호출에만 사용).</p>
       <div class="pub-actions">
-        <button class="action-btn primary" id="btn-pub-github">GitHub로 바로 게시</button>
-        <button class="action-btn" id="btn-pub-file" title="토큰 없이: 파일을 내려받아 폴더에 넣고 git push">파일로 내려받기</button>
+        <button class="action-btn primary" id="btn-pub-github">GitHub로 게시</button>
+        <button class="action-btn" id="btn-pub-file" title="토큰 없이 게시: 파일을 내려받아 폴더에 넣고 git push">파일로 내려받기</button>
         <button class="tb-btn danger" id="btn-pat-del" style="color:#2c3648">토큰 삭제</button>
         <a class="pub-hint" href="https://th00tames1.github.io/cv/" target="_blank" rel="noopener" style="margin-left:auto">공개 페이지 열기 ↗</a>
       </div>
@@ -140,9 +140,9 @@
   </script>
 
   <script src="docx.iife.js"></script>
-  <script src="cv-model.js?v=15"></script>
-  <script src="cv-render.js?v=15"></script>
-  <script src="docx-export.js?v=15"></script>
-  <script src="app.js?v=15"></script>
+  <script src="cv-model.js?v=16"></script>
+  <script src="cv-render.js?v=16"></script>
+  <script src="docx-export.js?v=16"></script>
+  <script src="app.js?v=16"></script>
 </body>
 </html>
