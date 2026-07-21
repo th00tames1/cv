@@ -96,6 +96,23 @@
         F('location', '장소', 'Vancouver, Canada')
       ]
     },
+    conferences: {
+      // 참석 기록용. 기본은 꺼둔 상태(defaultOff) — 내용은 저장되지만 CV/Word/공개 페이지에는 나오지 않음.
+      title: 'Conferences & Workshops', ko: '행사·학회 참석', tight: true, defaultOff: true,
+      fields: [
+        F('name', '행사명', 'ICML 2025', 'full'),
+        F('etype', '유형 (직접 입력 가능)', '예: Conference', 'half', 'combo',
+          [['Conference', 'Conference (학회)'], ['Workshop', 'Workshop (워크숍)'], ['Seminar', 'Seminar (세미나)'],
+           ['Symposium', 'Symposium (심포지엄)'], ['Training', 'Training (교육)'], ['Summer School', 'Summer School (하계학교)']]),
+        F('role', '역할 (직접 입력 가능)', '예: Attendee', 'half', 'combo',
+          [['Attendee', 'Attendee (참석)'], ['Presenter', 'Presenter (발표)'], ['Poster', 'Poster (포스터)'],
+           ['Panelist', 'Panelist (패널)'], ['Session Chair', 'Session Chair (좌장)'], ['Organizer', 'Organizer (주최·운영)']]),
+        F('organizer', '주최', 'International Machine Learning Society'),
+        F('location', '장소', 'Vancouver, Canada'),
+        F('date', '날짜', 'Jul 2025'),
+        F('note', '비고 (선택)', '', 'full')
+      ]
+    },
     projects: {
       title: 'Projects', ko: '프로젝트',
       fields: [
@@ -221,7 +238,7 @@
 
   var DEFAULT_ORDER = [
     'summary', 'research_interests', 'education', 'experience', 'research',
-    'publications', 'presentations', 'projects', 'teaching', 'awards', 'grants',
+    'publications', 'presentations', 'conferences', 'projects', 'teaching', 'awards', 'grants',
     'skills', 'languages', 'certifications', 'service', 'volunteer',
     'memberships', 'patents', 'references'
   ];
@@ -382,6 +399,30 @@
         }
       });
     });
+
+    // 앱 업데이트로 새로 생긴 기본 섹션을 기존 프로필에도 추가.
+    // 기존 CV 결과가 바뀌지 않도록 항상 꺼진 상태로 넣고, 기본 순서상 앞 섹션 뒤에 배치한다.
+    var have = {};
+    data.sections.forEach(function (s) { if (s) have[s.type] = true; });
+    function indexOfType(t) {
+      for (var j = 0; j < data.sections.length; j++) if (data.sections[j].type === t) return j;
+      return -1;
+    }
+    DEFAULT_ORDER.forEach(function (type, i) {
+      if (have[type] || !SECTION_DEFS[type]) return;
+      var at = -1, k, idx;
+      for (k = i - 1; k >= 0 && at < 0; k--) {          // 앞쪽에 있는 기본 섹션 뒤에
+        idx = indexOfType(DEFAULT_ORDER[k]);
+        if (idx >= 0) at = idx + 1;
+      }
+      for (k = i + 1; k < DEFAULT_ORDER.length && at < 0; k++) {  // 없으면 뒤쪽 기본 섹션 앞에
+        idx = indexOfType(DEFAULT_ORDER[k]);
+        if (idx >= 0) at = idx;
+      }
+      if (at < 0) at = data.sections.length;
+      data.sections.splice(at, 0, newSection(type, null, false));
+      have[type] = true;
+    });
     return data;
   }
 
@@ -395,7 +436,7 @@
   }
 
   function newProfileData() {
-    var sections = DEFAULT_ORDER.map(function (t) { return newSection(t); });
+    var sections = DEFAULT_ORDER.map(function (t) { return newSection(t, null, !SECTION_DEFS[t].defaultOff); });
     sections.push(newSection('custom', 'Additional Information', false));
     var personal = {};
     PERSONAL_FIELDS.forEach(function (f) { personal[f[0]] = ''; });
@@ -636,6 +677,18 @@
       var pt = trim(e.pres_type);
       if (pt && pt !== 'Oral') runs.push(R('[' + pt + ']'));
       return runs.length ? { cite: runs } : null;
+    },
+    conferences: function (e) {
+      // 1줄: 행사명(굵게) · 유형        [오른쪽] 날짜
+      // 2줄: 역할 · 주최 · 장소   /   3줄: 비고
+      var l1 = [];
+      if (trim(e.name)) l1.push(RB(e.name));
+      if (trim(e.etype)) l1.push(R((l1.length ? '  ·  ' : '') + trim(e.etype)));
+      var lines = [{ left: l1, right: trim(e.date) ? [R(e.date)] : null }];
+      var l2 = joinParts([e.role, e.organizer, e.location], '  ·  ');
+      if (l2) lines.push({ left: [R(l2)], right: null });
+      if (trim(e.note)) lines.push({ left: [R(e.note)], right: null });
+      return { lines: lines, bullets: [] };
     },
     awards: function (e) {
       var l1 = [];
