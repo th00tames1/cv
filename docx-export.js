@@ -21,7 +21,7 @@
       WidthType = docx.WidthType, TableLayoutType = docx.TableLayoutType,
       VerticalAlign = docx.VerticalAlign, ImageRun = docx.ImageRun,
       Header = docx.Header, Footer = docx.Footer, PageNumber = docx.PageNumber,
-      LevelFormat = docx.LevelFormat;
+      LevelFormat = docx.LevelFormat, ExternalHyperlink = docx.ExternalHyperlink;
 
   var PAPERS = {
     a4: { w: 11906, h: 16838 },
@@ -388,16 +388,27 @@
     return o.cfg.header.headBand ? { type: ShadingType.CLEAR, fill: o.cfg.header.headBand } : undefined;
   }
 
+  // 연락처 항목 → Word 런. href가 있으면 하이퍼링크로 걸되, 색·기울임은 본문과 동일하게
+  // 유지해 인쇄물에서 파란 밑줄로 튀지 않게 한다.
+  function contactRuns(items, sep, style) {
+    var out = [];
+    items.forEach(function (it, i) {
+      if (i && sep) out.push(new TextRun({ text: sep, size: style.size, color: style.color, italics: style.italics }));
+      var run = new TextRun({ text: it.text, size: style.size, color: style.color, italics: style.italics });
+      out.push((it.href && ExternalHyperlink) ? new ExternalHyperlink({ link: it.href, children: [run] }) : run);
+    });
+    return out;
+  }
+
   function contactParagraphs(o, p, align, small) {
-    var sep = contactSep(o);
-    return M.contactLines(p).map(function (line) {
+    var style = {
+      size: small ? o.sz.meta - 1 : o.sz.meta,
+      color: '444444', italics: !!o.cfg.header.contactItalic
+    };
+    return M.contactItems(p, o.s).map(function (items) {
       return new Paragraph({
         alignment: align, spacing: { after: 30 }, shading: headBand(o),
-        children: [new TextRun({
-          text: sep === '  |  ' ? line : line.split('  |  ').join(sep),
-          size: small ? o.sz.meta - 1 : o.sz.meta,
-          color: '444444', italics: !!o.cfg.header.contactItalic
-        })]
+        children: contactRuns(items, contactSep(o), style)
       });
     });
   }
@@ -441,12 +452,10 @@
         new TableCell({
           width: { size: rightW, type: WidthType.DXA }, borders: NO_BORDERS,
           verticalAlign: VerticalAlign.BOTTOM,
-          children: M.contactLines(p).map(function (line) {
+          children: M.contactItems(p, o.s).map(function (items) {
             return new Paragraph({
               alignment: AlignmentType.RIGHT, spacing: { after: 20 },
-              children: line.split('  |  ').map(function (piece, i) {
-                return new TextRun({ text: (i ? ' · ' : '') + piece, size: o.sz.meta - 1, color: '737373', italics: true });
-              })
+              children: contactRuns(items, ' · ', { size: o.sz.meta - 1, color: '737373', italics: true })
             });
           })
         })
@@ -671,11 +680,11 @@
           children: [new TextRun({ text: M.trim(p.title), size: o.sz.title - 2, color: 'E8EEF5' })]
         }));
       }
-      M.contactLines(p).forEach(function (line) {
-        line.split('  |  ').forEach(function (piece) {
+      M.contactItems(p, o.s).forEach(function (items) {
+        items.forEach(function (it) {
           sideKids.push(new Paragraph({
             spacing: { after: 20 },
-            children: [new TextRun({ text: piece, size: o.sz.meta - 1, color: 'D3DEE9' })]
+            children: contactRuns([it], '', { size: o.sz.meta - 1, color: 'D3DEE9' })
           }));
         });
       });

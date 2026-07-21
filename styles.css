@@ -172,6 +172,9 @@ input, select, textarea { font-family: inherit; font-size: 13px; color: #23272f;
 .cv-name { font-weight: 700; margin: 0; }
 .cv-title { margin: 2px 0 0; color: #333; }
 .cv-contact { color: #444; margin: 3px 0 0; }
+/* 연락처 하이퍼링크: 인쇄물에서 튀지 않도록 본문과 같은 색·밑줄 없음 (클릭은 가능) */
+.cv-contact a, .cv-head-contact a { color: inherit; text-decoration: none; }
+.cv-contact a:hover, .cv-head-contact a:hover { text-decoration: underline; }
 .cv-photo { width: 96px; height: auto; flex: none; order: 2; }
 .cv-photo.round { width: 104px; height: 104px; object-fit: cover; border-radius: 50%; }
 .cv-photo.framed { border: 2px solid var(--accent); } /* moderncv 공식 액자형 */

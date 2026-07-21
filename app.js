@@ -706,6 +706,7 @@
     el('ctl-size').value = s.fontSize;
     el('ctl-density').value = s.density || 'normal';
     el('ctl-boldname').value = s.boldName || '';
+    el('ctl-linkstyle').value = s.linkStyle || 'label';
     // 해당 양식의 공식 색상 팔레트 스와치
     var sw = el('swatches');
     var colors = spec.swatches || [];
@@ -731,6 +732,7 @@
     el('ctl-size').addEventListener('change', function () { P().settings.fontSize = this.value; scheduleSave(); renderPreview(); });
     el('ctl-density').addEventListener('change', function () { P().settings.density = this.value; scheduleSave(); renderPreview(); });
     el('ctl-boldname').addEventListener('input', function () { P().settings.boldName = this.value; scheduleSave(); schedulePreview(); });
+    el('ctl-linkstyle').addEventListener('change', function () { P().settings.linkStyle = this.value; scheduleSave(); renderPreview(); });
 
     el('btn-print').addEventListener('click', function () {
       setPrintPaper(P().settings);

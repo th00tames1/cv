@@ -147,10 +147,14 @@
 
     var p = data.personal || {};
     var html = '';
-    var contactLines = M.contactLines(p).map(function (line) {
-      return spec.contactSep ? line.split('  |  ').join(spec.contactSep) : line;
-    });
-    var hasHeader = M.trim(p.fullName) || M.trim(p.title) || contactLines.length;
+    var contactRows = M.contactItems(p, s);
+    var contactSep = spec.contactSep || '  |  ';
+    function contactHtml(it) {
+      var t = esc(it.text);
+      // rel=noopener: 새 탭으로 열릴 때 opener 접근 차단
+      return it.href ? '<a href="' + esc(it.href) + '" target="_blank" rel="noopener">' + t + '</a>' : t;
+    }
+    var hasHeader = M.trim(p.fullName) || M.trim(p.title) || contactRows.length;
     var photoCls = 'cv-photo' + (spec.photoShape === 'circle' ? ' round' : '') + (spec.photoShape === 'framed' ? ' framed' : '');
     var photoHtml = (spec.photo && p.photo) ? '<img class="' + photoCls + '" src="' + p.photo + '" alt="">' : '';
 
@@ -162,13 +166,15 @@
       if (M.trim(p.fullName)) headerHtml += '<h1 class="cv-name">' + nameHtml(p.fullName, spec) + '</h1>';
       if (M.trim(p.title)) headerHtml += '<p class="cv-title">' + esc(p.title) + '</p>';
       if (!spec.contactRight) {
-        contactLines.forEach(function (line) { headerHtml += '<p class="cv-contact">' + esc(line) + '</p>'; });
+        contactRows.forEach(function (items) {
+          headerHtml += '<p class="cv-contact">' + items.map(contactHtml).join(esc(contactSep)) + '</p>';
+        });
       }
       headerHtml += '</div>';
-      if (spec.contactRight && contactLines.length) {
+      if (spec.contactRight && contactRows.length) {
         headerHtml += '<div class="cv-head-contact">';
-        contactLines.forEach(function (line) {
-          line.split('  |  ').forEach(function (piece) { headerHtml += '<div>' + esc(piece) + '</div>'; });
+        contactRows.forEach(function (items) {
+          items.forEach(function (it) { headerHtml += '<div>' + contactHtml(it) + '</div>'; });
         });
         headerHtml += '</div>';
       }

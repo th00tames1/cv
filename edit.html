@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
   <title>Editor</title>
-  <link rel="stylesheet" href="styles.css?v=18">
+  <link rel="stylesheet" href="styles.css?v=19">
   <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'&gt;&lt;text y='.9em' font-size='90'&gt;📄&lt;/text&gt;&lt;/svg&gt;">
 </head>
 <body>
@@ -51,6 +51,11 @@
         </select>
         <label>이름 굵게</label>
         <input type="text" id="ctl-boldname" placeholder="예: Hong, G.; G. Hong" title="논문·발표 저자 목록에서 본인 이름을 굵게 표시합니다. 여러 표기는 ; 로 구분하세요.">
+        <label>연락처 표기</label>
+        <select id="ctl-linkstyle" title="LinkedIn·GitHub 등을 짧은 라벨로 표시할지, 전체 주소로 표시할지 선택합니다. 두 경우 모두 하이퍼링크가 걸립니다.">
+          <option value="label">짧은 라벨</option>
+          <option value="url">전체 주소</option>
+        </select>
         <span class="ph-spacer"></span>
         <button class="action-btn" id="btn-print" title="브라우저 인쇄 기능으로 PDF 저장이 가능합니다.">인쇄 / PDF</button>
         <button class="action-btn primary" id="btn-docx">Word로 내보내기 (.docx)</button>
@@ -140,9 +145,9 @@
   </script>
 
   <script src="docx.iife.js"></script>
-  <script src="cv-model.js?v=18"></script>
-  <script src="cv-render.js?v=18"></script>
-  <script src="docx-export.js?v=18"></script>
-  <script src="app.js?v=18"></script>
+  <script src="cv-model.js?v=19"></script>
+  <script src="cv-render.js?v=19"></script>
+  <script src="docx-export.js?v=19"></script>
+  <script src="app.js?v=19"></script>
 </body>
 </html>

@@ -257,7 +257,7 @@
     ['orcid', 'ORCID', '0000-0002-1234-5678']
   ];
 
-  var DEFAULT_SETTINGS = { template: 'harvard', accent: '', fontSize: 'medium', density: 'normal', boldName: '' };
+  var DEFAULT_SETTINGS = { template: 'harvard', accent: '', fontSize: 'medium', density: 'normal', boldName: '', linkStyle: 'label' };
 
   /* ---------- 템플릿 스펙 (실존 양식 기반) ----------
    * layout: single | left-dates | sidebar | left-labels
@@ -806,16 +806,56 @@
     return { title: section.title || def.title, tight: !!def.tight, type: section.type, groups: groups };
   }
 
-  /* ---------- 연락처 라인 ---------- */
-  function contactLines(personal) {
+  /* ---------- 연락처 ----------
+   * contactItems(personal, settings) → [[{ text, href? }, ...], ...]  (최대 2줄)
+   * settings.linkStyle: 'label'(기본) = LinkedIn·GitHub 등 짧은 라벨 / 'url' = 전체 주소
+   * 두 경우 모두 href를 함께 돌려주므로 HTML·Word에서 하이퍼링크로 걸 수 있다.
+   */
+  function webHref(v) {
+    v = trim(v);
+    if (!v) return '';
+    return /^(https?:|mailto:|tel:)/i.test(v) ? v : 'https://' + v;
+  }
+  function stripUrl(v) {   // 프로토콜·www·끝 슬래시 제거 (경로는 유지)
+    return trim(v).replace(/^(https?:\/\/)?(www\.)?/i, '').replace(/\/+$/, '');
+  }
+  function hostOnly(v) { return stripUrl(v).split('/')[0]; }
+  function orcidId(v) {
+    return trim(v).replace(/^(https?:\/\/)?(www\.)?orcid\.org\//i, '').replace(/\/+$/, '');
+  }
+
+  function contactItems(personal, settings) {
     var p = personal || {};
-    var line1 = [p.email, p.phone, p.pronouns, p.address].map(trim).filter(Boolean);
-    var orcid = trim(p.orcid).replace(/^(https?:\/\/)?(www\.)?orcid\.org\//i, '');
-    var line2 = [p.website, p.linkedin, p.github, p.scholar, orcid ? 'ORCID: ' + orcid : ''].map(trim).filter(Boolean);
+    var labelMode = ((settings || {}).linkStyle || 'label') !== 'url';
+    var line1 = [], line2 = [];
+    function add(arr, text, href) {
+      text = trim(text);
+      if (text) arr.push(href ? { text: text, href: href } : { text: text });
+    }
+    add(line1, p.email, trim(p.email) ? 'mailto:' + trim(p.email) : '');
+    add(line1, p.phone, trim(p.phone) ? 'tel:' + trim(p.phone).replace(/[^+\d]/g, '') : '');
+    add(line1, p.pronouns, '');
+    add(line1, p.address, '');
+
+    // 웹사이트는 라벨 모드에서도 도메인을 남긴다(짧고 본인 식별에 쓰이므로)
+    if (trim(p.website)) add(line2, labelMode ? hostOnly(p.website) : stripUrl(p.website), webHref(p.website));
+    if (trim(p.linkedin)) add(line2, labelMode ? 'LinkedIn' : stripUrl(p.linkedin), webHref(p.linkedin));
+    if (trim(p.github)) add(line2, labelMode ? 'GitHub' : stripUrl(p.github), webHref(p.github));
+    if (trim(p.scholar)) add(line2, labelMode ? 'Google Scholar' : stripUrl(p.scholar), webHref(p.scholar));
+    var oid = orcidId(p.orcid);
+    if (oid) add(line2, labelMode ? 'ORCID' : 'ORCID: ' + oid, 'https://orcid.org/' + oid);
+
     var out = [];
-    if (line1.length) out.push(line1.join('  |  '));
-    if (line2.length) out.push(line2.join('  |  '));
+    if (line1.length) out.push(line1);
+    if (line2.length) out.push(line2);
     return out;
+  }
+
+  // 평문 버전 (하이퍼링크가 필요 없는 곳)
+  function contactLines(personal, settings) {
+    return contactItems(personal, settings).map(function (items) {
+      return items.map(function (it) { return it.text; }).join('  |  ');
+    });
   }
 
   /* ---------- 샘플 데이터 ---------- */
@@ -924,6 +964,6 @@
     newProfileData: newProfileData, newSection: newSection, emptyEntry: emptyEntry,
     migrateData: migrateData,
     isEntryEmpty: isEntryEmpty, nonEmptyEntries: nonEmptyEntries,
-    sectionContent: sectionContent, contactLines: contactLines, sampleData: sampleData
+    sectionContent: sectionContent, contactLines: contactLines, contactItems: contactItems, sampleData: sampleData
   };
 });
