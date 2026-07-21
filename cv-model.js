@@ -266,7 +266,7 @@
       nameStyle: 'two-tone'
     },
     awesome: {
-      label: 'Awesome CV — GitHub 인기 개발자 이력서',
+      label: 'Awesome CV — GitHub 28k★ 개발자 이력서',
       desc: 'posquit0의 Awesome-CV. 가는 이름과 굵은 성, 섹션 첫 세 글자 강조색. 개발자 이력서를 대표하는 양식.',
       layout: 'single', entryStyle: 'awesome', paper: 'a4', headingFirst3: true,
       accent: '#DC3522',
@@ -285,7 +285,7 @@
     },
     europass: {
       label: 'Europass — EU 공식 (2020+ 현행)',
-      desc: 'EU 공식 CV 빌더의 현행 기본형(Formal). 회색 헤더 밴드, 대문자 섹션과 가는 밑줄. 유럽 표준 공식 양식.',
+      desc: 'EU 공식 CV 빌더의 현행 기본형(Formal). 회색 헤더 밴드, 대문자 섹션과 가는 밑줄. 수천만 건 작성된 공식 양식.',
       layout: 'single', entryStyle: 'europass', paper: 'a4',
       accent: '#004B80', swatches: ['#004B80', '#4D9ACB', '#0D5942', '#3B9E80', '#6C3088', '#C65094'],
       photo: true, photoIn: 'head', photoShape: 'circle', photoSize: 86, nameStyle: 'plain'
@@ -305,7 +305,7 @@
       photo: false, nameStyle: 'smallcaps'
     },
     stockholm: {
-      label: 'Stockholm — Resume.io 대표 템플릿',
+      label: 'Stockholm — Resume.io 1,700만+ 사용',
       desc: 'Resume.io(현 Essential)의 대표 템플릿. 2단 화이트, 차콜 제목, 파란 스킬 바.',
       layout: 'sidebar', entryStyle: 'stockholm', paper: 'a4',
       accent: '#3095D5', swatches: ['#3095D5', '#E44C4C', '#20C997', '#7950F2', '#F59F00', '#343A40'],
@@ -314,7 +314,7 @@
     },
     cascade: {
       label: 'Cascade — Zety 대표 (네이비 사이드바)',
-      desc: 'Zety의 대표 템플릿. 네이비 사이드바에 인적사항·스킬, 흰 본문.',
+      desc: 'Zety에서 150만+ 명이 사용한 템플릿. 네이비 사이드바에 인적사항·스킬, 흰 본문.',
       layout: 'sidebar', sideLeft: true, headerIn: 'side', entryStyle: 'title-first', paper: 'a4',
       accent: '#1F4E79', swatches: ['#1F4E79', '#163A57', '#343A40', '#0F6674', '#7A263A', '#2E5E33'],
       side: ['skills', 'languages', 'certifications', 'memberships'],
@@ -322,7 +322,7 @@
     },
     canva: {
       label: 'Canva Style — 파스텔 사이드바',
-      desc: 'Canva 이력서 템플릿의 대표적인 미학. 연회색 사이드바, 자간 넓은 대문자 이름, 얇은 구분선.',
+      desc: 'Canva(월 2.6억 사용자) 이력서 템플릿의 대표적인 미학. 연회색 사이드바, 자간 넓은 대문자 이름, 얇은 구분선.',
       layout: 'sidebar', entryStyle: 'title-first', paper: 'a4',
       accent: '#4A6FA5', swatches: ['#4A6FA5', '#8A9BA8', '#C77E6F', '#6B8F71', '#9A7AA0', '#37474F'],
       side: ['skills', 'languages', 'certifications', 'memberships'],
