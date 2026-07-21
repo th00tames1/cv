@@ -172,9 +172,20 @@ input, select, textarea { font-family: inherit; font-size: 13px; color: #23272f;
 .cv-name { font-weight: 700; margin: 0; }
 .cv-title { margin: 2px 0 0; color: #333; }
 .cv-contact { color: #444; margin: 3px 0 0; }
-/* 연락처 하이퍼링크: 인쇄물에서 튀지 않도록 본문과 같은 색·밑줄 없음 (클릭은 가능) */
-.cv-contact a, .cv-head-contact a { color: inherit; text-decoration: none; }
+/* 연락처 하이퍼링크: 링크임을 알 수 있게 강조색(검정 계열 템플릿은 링크용 파랑)으로 표시 */
+.cv-contact a, .cv-head-contact a {
+  color: var(--link, #0f4c81); text-decoration: none;
+  white-space: nowrap; /* 아이콘과 라벨이 줄바꿈으로 갈라지지 않게 */
+}
 .cv-contact a:hover, .cv-head-contact a:hover { text-decoration: underline; }
+/* 연락처 아이콘 — 글자 크기·색을 따라감 */
+.cv-contact svg.ci, .cv-head-contact svg.ci {
+  width: .95em; height: .95em; vertical-align: -.145em; margin-right: .26em;
+  -webkit-print-color-adjust: exact; print-color-adjust: exact;
+}
+.cv-contact .cv-ci, .cv-head-contact .cv-ci { white-space: nowrap; }
+/* 링크가 아닌 항목(주소 등)의 아이콘은 본문 색보다 살짝 흐리게 */
+.cv-contact .cv-ci svg.ci, .cv-head-contact .cv-ci svg.ci { opacity: .75; }
 .cv-photo { width: 96px; height: auto; flex: none; order: 2; }
 .cv-photo.round { width: 104px; height: 104px; object-fit: cover; border-radius: 50%; }
 .cv-photo.framed { border: 2px solid var(--accent); } /* moderncv 공식 액자형 */

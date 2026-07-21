@@ -388,14 +388,32 @@
     return o.cfg.header.headBand ? { type: ShadingType.CLEAR, fill: o.cfg.header.headBand } : undefined;
   }
 
-  // 연락처 항목 → Word 런. href가 있으면 하이퍼링크로 걸되, 색·기울임은 본문과 동일하게
-  // 유지해 인쇄물에서 파란 밑줄로 튀지 않게 한다.
-  function contactRuns(items, sep, style) {
+  // 강조색이 거의 검정이면 링크가 본문과 구분되지 않으므로 링크용 파랑을 쓴다
+  function linkColorDocx(o, override) {
+    if (override) return override;
+    var a = String(o.accent || '').replace('#', '');
+    if (!/^[0-9a-fA-F]{6}$/.test(a)) return '0F4C81';
+    var n = parseInt(a, 16);
+    var lum = 0.2126 * ((n >> 16) & 255) + 0.7152 * ((n >> 8) & 255) + 0.0722 * (n & 255);
+    return lum < 60 ? '0F4C81' : a.toUpperCase();
+  }
+
+  // 연락처 항목 → Word 런. href가 있으면 하이퍼링크로 걸고, 링크는 색+밑줄로 구분되게 한다.
+  function contactRuns(items, sep, style, linkColor) {
     var out = [];
     items.forEach(function (it, i) {
       if (i && sep) out.push(new TextRun({ text: sep, size: style.size, color: style.color, italics: style.italics }));
-      var run = new TextRun({ text: it.text, size: style.size, color: style.color, italics: style.italics });
-      out.push((it.href && ExternalHyperlink) ? new ExternalHyperlink({ link: it.href, children: [run] }) : run);
+      if (it.href && ExternalHyperlink) {
+        out.push(new ExternalHyperlink({
+          link: it.href,
+          children: [new TextRun({
+            text: it.text, size: style.size, italics: style.italics,
+            color: linkColor || '0F4C81', underline: {}
+          })]
+        }));
+      } else {
+        out.push(new TextRun({ text: it.text, size: style.size, color: style.color, italics: style.italics }));
+      }
     });
     return out;
   }
@@ -408,7 +426,7 @@
     return M.contactItems(p, o.s).map(function (items) {
       return new Paragraph({
         alignment: align, spacing: { after: 30 }, shading: headBand(o),
-        children: contactRuns(items, contactSep(o), style)
+        children: contactRuns(items, contactSep(o), style, linkColorDocx(o))
       });
     });
   }
@@ -455,7 +473,7 @@
           children: M.contactItems(p, o.s).map(function (items) {
             return new Paragraph({
               alignment: AlignmentType.RIGHT, spacing: { after: 20 },
-              children: contactRuns(items, ' · ', { size: o.sz.meta - 1, color: '737373', italics: true })
+              children: contactRuns(items, ' · ', { size: o.sz.meta - 1, color: '737373', italics: true }, linkColorDocx(o))
             });
           })
         })
@@ -684,7 +702,7 @@
         items.forEach(function (it) {
           sideKids.push(new Paragraph({
             spacing: { after: 20 },
-            children: contactRuns([it], '', { size: o.sz.meta - 1, color: 'D3DEE9' })
+            children: contactRuns([it], '', { size: o.sz.meta - 1, color: 'D3DEE9' }, 'FFFFFF')
           }));
         });
       });

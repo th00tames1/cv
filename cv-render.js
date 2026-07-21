@@ -16,6 +16,38 @@
       .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
 
+  /* 연락처 아이콘 (16x16, currentColor — 글자 색·크기를 따라감) */
+  var ICON_PATHS = {
+    mail: '<rect x="1.5" y="3" width="13" height="10" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.4"/>' +
+          '<path d="M2.2 4.4 8 8.7l5.8-4.3" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>',
+    phone: '<path d="M3.2 1.6a1.2 1.2 0 0 1 1.7.2l1.4 1.9a1.2 1.2 0 0 1-.2 1.6L5 6.3a8.9 8.9 0 0 0 4.7 4.7l1-1.1a1.2 1.2 0 0 1 1.6-.2l1.9 1.4a1.2 1.2 0 0 1 .2 1.7l-.9 1c-.5.6-1.3.8-2 .5C7.9 14 2 8.1.6 3.3c-.2-.7 0-1.5.6-2z" fill="currentColor"/>',
+    pin: '<path d="M8 1.7c-2.5 0-4.5 2-4.5 4.5C3.5 9.7 8 14.3 8 14.3s4.5-4.6 4.5-8.1C12.5 3.7 10.5 1.7 8 1.7z" fill="none" stroke="currentColor" stroke-width="1.4"/>' +
+         '<circle cx="8" cy="6.1" r="1.7" fill="currentColor"/>',
+    globe: '<circle cx="8" cy="8" r="6.3" fill="none" stroke="currentColor" stroke-width="1.4"/>' +
+           '<path d="M1.7 8h12.6M8 1.7c3.1 3.4 3.1 9.2 0 12.6-3.1-3.4-3.1-9.2 0-12.6z" fill="none" stroke="currentColor" stroke-width="1.4"/>',
+    linkedin: '<rect x="1.2" y="1.2" width="13.6" height="13.6" rx="2.6" fill="currentColor"/>' +
+              '<text x="8" y="11.5" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="8.4" font-weight="700" fill="#fff">in</text>',
+    github: '<path d="M8 1.3a6.7 6.7 0 0 0-2.1 13.1c.33.06.45-.15.45-.33v-1.15c-1.87.4-2.26-.9-2.26-.9-.3-.78-.75-.99-.75-.99-.61-.42.05-.41.05-.41.68.05 1.03.7 1.03.7.6 1.03 1.58.73 1.97.56.06-.44.24-.74.43-.91-1.49-.17-3.06-.75-3.06-3.32 0-.73.26-1.33.69-1.8-.07-.17-.3-.85.07-1.78 0 0 .56-.18 1.84.69a6.4 6.4 0 0 1 3.35 0c1.28-.87 1.84-.69 1.84-.69.37.93.14 1.61.07 1.78.43.47.69 1.07.69 1.8 0 2.58-1.57 3.15-3.07 3.31.24.21.46.62.46 1.25v1.85c0 .18.12.39.46.33A6.7 6.7 0 0 0 8 1.3z" fill="currentColor"/>',
+    scholar: '<path d="M8 1.9.9 5.6 8 9.3l7.1-3.7z" fill="currentColor"/>' +
+             '<path d="M3.9 7.4v3.1c0 1.2 1.8 2.2 4.1 2.2s4.1-1 4.1-2.2V7.4" fill="none" stroke="currentColor" stroke-width="1.3"/>',
+    orcid: '<circle cx="8" cy="8" r="6.6" fill="currentColor"/>' +
+           '<text x="8" y="11.1" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="7.4" font-weight="700" fill="#fff">iD</text>'
+  };
+  function iconSvg(name) {
+    var body = ICON_PATHS[name];
+    if (!body) return '';
+    return '<svg class="ci" viewBox="0 0 16 16" aria-hidden="true" focusable="false">' + body + '</svg>';
+  }
+
+  // 강조색이 거의 검정이면 링크가 본문과 구분되지 않으므로 링크용 파랑을 쓴다
+  function linkColor(accent) {
+    var m = /^#?([0-9a-fA-F]{6})$/.exec(String(accent || '').trim());
+    if (!m) return '#0f4c81';
+    var n = parseInt(m[1], 16);
+    var lum = 0.2126 * ((n >> 16) & 255) + 0.7152 * ((n >> 8) & 255) + 0.0722 * (n & 255);
+    return lum < 60 ? '#0f4c81' : (accent.charAt(0) === '#' ? accent : '#' + accent);
+  }
+
   function runsToHtml(runs) {
     return (runs || []).map(function (r) {
       var t = esc(r.t);
@@ -150,9 +182,11 @@
     var contactRows = M.contactItems(p, s);
     var contactSep = spec.contactSep || '  |  ';
     function contactHtml(it) {
-      var t = esc(it.text);
+      var inner = iconSvg(it.icon) + '<span>' + esc(it.text) + '</span>';
       // rel=noopener: 새 탭으로 열릴 때 opener 접근 차단
-      return it.href ? '<a href="' + esc(it.href) + '" target="_blank" rel="noopener">' + t + '</a>' : t;
+      return it.href
+        ? '<a href="' + esc(it.href) + '" target="_blank" rel="noopener">' + inner + '</a>'
+        : '<span class="cv-ci">' + inner + '</span>';
     }
     var hasHeader = M.trim(p.fullName) || M.trim(p.title) || contactRows.length;
     var photoCls = 'cv-photo' + (spec.photoShape === 'circle' ? ' round' : '') + (spec.photoShape === 'framed' ? ' framed' : '');
@@ -160,7 +194,9 @@
 
     var headerHtml = '';
     if (hasHeader || photoHtml) {
-      headerHtml += '<header class="cv-head' + (spec.contactRight ? ' head-split' : '') + '">';
+      // 헤더가 짙은 사이드바 안에 들어가는 템플릿(Cascade)은 강조색 링크가 배경에 묻히므로 흰색으로
+      var linkCol = spec.headerIn === 'side' ? '#ffffff' : linkColor(accent);
+      headerHtml += '<header class="cv-head' + (spec.contactRight ? ' head-split' : '') + '" style="--link:' + esc(linkCol) + '">';
       if (photoHtml) headerHtml += photoHtml;
       headerHtml += '<div class="cv-head-text">';
       if (M.trim(p.fullName)) headerHtml += '<h1 class="cv-name">' + nameHtml(p.fullName, spec) + '</h1>';

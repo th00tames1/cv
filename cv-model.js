@@ -828,22 +828,26 @@
     var p = personal || {};
     var labelMode = ((settings || {}).linkStyle || 'label') !== 'url';
     var line1 = [], line2 = [];
-    function add(arr, text, href) {
+    function add(arr, text, href, icon) {
       text = trim(text);
-      if (text) arr.push(href ? { text: text, href: href } : { text: text });
+      if (!text) return;
+      var it = { text: text };
+      if (href) it.href = href;
+      if (icon) it.icon = icon;
+      arr.push(it);
     }
-    add(line1, p.email, trim(p.email) ? 'mailto:' + trim(p.email) : '');
-    add(line1, p.phone, trim(p.phone) ? 'tel:' + trim(p.phone).replace(/[^+\d]/g, '') : '');
-    add(line1, p.pronouns, '');
-    add(line1, p.address, '');
+    add(line1, p.email, trim(p.email) ? 'mailto:' + trim(p.email) : '', 'mail');
+    add(line1, p.phone, trim(p.phone) ? 'tel:' + trim(p.phone).replace(/[^+\d]/g, '') : '', 'phone');
+    add(line1, p.pronouns, '', '');
+    add(line1, p.address, '', 'pin');
 
     // 웹사이트는 라벨 모드에서도 도메인을 남긴다(짧고 본인 식별에 쓰이므로)
-    if (trim(p.website)) add(line2, labelMode ? hostOnly(p.website) : stripUrl(p.website), webHref(p.website));
-    if (trim(p.linkedin)) add(line2, labelMode ? 'LinkedIn' : stripUrl(p.linkedin), webHref(p.linkedin));
-    if (trim(p.github)) add(line2, labelMode ? 'GitHub' : stripUrl(p.github), webHref(p.github));
-    if (trim(p.scholar)) add(line2, labelMode ? 'Google Scholar' : stripUrl(p.scholar), webHref(p.scholar));
+    if (trim(p.website)) add(line2, labelMode ? hostOnly(p.website) : stripUrl(p.website), webHref(p.website), 'globe');
+    if (trim(p.linkedin)) add(line2, labelMode ? 'LinkedIn' : stripUrl(p.linkedin), webHref(p.linkedin), 'linkedin');
+    if (trim(p.github)) add(line2, labelMode ? 'GitHub' : stripUrl(p.github), webHref(p.github), 'github');
+    if (trim(p.scholar)) add(line2, labelMode ? 'Google Scholar' : stripUrl(p.scholar), webHref(p.scholar), 'scholar');
     var oid = orcidId(p.orcid);
-    if (oid) add(line2, labelMode ? 'ORCID' : 'ORCID: ' + oid, 'https://orcid.org/' + oid);
+    if (oid) add(line2, labelMode ? 'ORCID' : 'ORCID: ' + oid, 'https://orcid.org/' + oid, 'orcid');
 
     var out = [];
     if (line1.length) out.push(line1);
