@@ -246,6 +246,107 @@
     return { html: html, className: className, accent: accent, link: linkColor(accent), paper: spec.paper || 'a4', empty: !hasHeader && !any };
   }
 
+  /* ---------- 페이지 분할 (편집기 미리보기 · 공개 페이지 공용) ----------
+   * 실제 인쇄(PDF)는 여백 있는 여러 장으로 나오므로, 화면에서도 페이지 사이에
+   * 위/아래 여백을 보여 준다. 인쇄 시 spacer는 @media print에서 숨겨진다.
+   */
+  function addPageMarkers(page, paperKey) {
+    var paper = PAPER_PX[paperKey || 'a4'] || PAPER_PX.a4;
+    var total = page.scrollHeight;
+    for (var n = 1; n * paper.h < total - 40; n++) {
+      var m = document.createElement('div');
+      m.className = 'pagebreak-marker';
+      m.style.top = (n * paper.h) + 'px';
+      m.innerHTML = '<span>페이지 ' + n + ' 경계</span>';
+      page.appendChild(m);
+    }
+  }
+
+  // 인쇄와 비슷하게: 섹션의 (제목+첫 항목)은 함께 유지하고 둘째 항목부터 사이에서 나눈다.
+  function paginate(page, paper) {
+    var cs = getComputedStyle(page);
+    var padTop = parseFloat(cs.paddingTop) || 0;
+    var padBottom = parseFloat(cs.paddingBottom) || 0;
+    var availH = paper.h - padTop - padBottom;
+    if (availH < 220) return;
+    if (page.scrollHeight <= paper.h + 2) return;   // 한 페이지면 분할 불필요
+
+    function isSec(el) { return !!(el.classList && el.classList.contains('cv-sec')); }
+
+    // 분할 지점: { before(이 요소 앞에서 나눔), test(넘침 판정 기준 요소) }
+    var pts = [];
+    Array.prototype.forEach.call(page.children, function (child) {
+      if (!child.classList || child.classList.contains('pg-spacer') || child.classList.contains('pagebreak-marker')) return;
+      if (isSec(child)) {
+        var disp = getComputedStyle(child).display;
+        var entries = Array.prototype.filter.call(child.children, function (gc) { return gc.tagName !== 'H2'; });
+        if (/grid|flex/.test(disp) || entries.length <= 1) {
+          pts.push({ before: child, test: child });                 // 통째로
+        } else {
+          pts.push({ before: child, test: entries[0] });            // 제목+첫 항목이 안 들어가면 통째로 넘김
+          for (var k = 1; k < entries.length; k++) pts.push({ before: entries[k], test: entries[k] });
+        }
+      } else {
+        pts.push({ before: child, test: child });
+      }
+    });
+
+    var GUTTER = 26;
+    var pageTop = page.getBoundingClientRect().top;
+    var curBottom = pageTop + padTop + availH;
+    var firstOnPage = 0, pageNo = 1, guard = 0;
+
+    function bottomAfter(before, topY) {
+      var b = topY + availH;
+      if (!isSec(before)) {   // 섹션은 내부 항목이 따로 분할되므로 그대로, 리프만 넘김 처리
+        var bot = before.getBoundingClientRect().bottom, g = 0;
+        while (bot > b + 0.5 && g++ < 40) b += availH;
+      }
+      return b;
+    }
+
+    for (var i = 0; i < pts.length && guard < 80; i++) {
+      var p = pts[i];
+      var tr = p.test.getBoundingClientRect();
+      if (tr.height === 0) continue;
+      if (tr.bottom <= curBottom + 0.5) continue;
+      if (i === firstOnPage) {
+        curBottom = bottomAfter(p.before, p.before.getBoundingClientRect().top);
+        firstOnPage = i + 1; continue;
+      }
+      guard++;
+      var br = p.before.getBoundingClientRect();
+      var h = (curBottom + padBottom + GUTTER + padTop) - br.top;
+      if (h < GUTTER + 8) h = GUTTER + 8;
+      var grayEnd = Math.max(padTop + 2, Math.min(h - 2, h - padTop));
+      var whiteBot = Math.max(0, Math.min(grayEnd - 2, h - GUTTER - padTop));
+      var spacer = document.createElement('div');
+      spacer.className = 'pg-spacer';
+      spacer.style.height = h + 'px';
+      spacer.style.background = 'linear-gradient(to bottom, #fff 0, #fff ' + whiteBot + 'px, #e9ecf1 ' + whiteBot + 'px, #e9ecf1 ' + grayEnd + 'px, #fff ' + grayEnd + 'px, #fff 100%)';
+      var lbl = document.createElement('div');
+      lbl.className = 'pg-gaplabel';
+      lbl.style.top = ((whiteBot + grayEnd) / 2) + 'px';
+      lbl.textContent = '페이지 경계 (' + pageNo + ' → ' + (pageNo + 1) + ')';
+      spacer.appendChild(lbl);
+      p.before.parentNode.insertBefore(spacer, p.before);
+      pageNo++;
+      curBottom = bottomAfter(p.before, p.before.getBoundingClientRect().top);
+      firstOnPage = i;
+    }
+  }
+
+  // 배율을 지운 상태에서 측정 → 분할. 호출한 쪽이 이어서 배율을 적용한다.
+  function layoutPages(page, paperKey, isEmpty) {
+    if (!page) return;
+    page.style.transform = '';
+    Array.prototype.forEach.call(page.querySelectorAll('.pg-spacer, .pagebreak-marker'), function (n) { n.remove(); });
+    if (isEmpty) return;
+    // 2단(사이드바) 레이아웃은 열 분할이 어려워 경계선만 표시
+    if (page.querySelector('.cols')) addPageMarkers(page, paperKey);
+    else paginate(page, PAPER_PX[paperKey || 'a4'] || PAPER_PX.a4);
+  }
+
   // 원형 크롭 (Word 내보내기용, AltaCV 등)
   function circledPhoto(dataUrl) {
     return new Promise(function (resolve) {
@@ -266,5 +367,8 @@
     });
   }
 
-  return { PAPER_PX: PAPER_PX, esc: esc, runsToHtml: runsToHtml, renderCv: renderCv, circledPhoto: circledPhoto };
+  return {
+    PAPER_PX: PAPER_PX, esc: esc, runsToHtml: runsToHtml, renderCv: renderCv,
+    layoutPages: layoutPages, circledPhoto: circledPhoto
+  };
 });

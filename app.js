@@ -493,112 +493,78 @@
     });
   }
 
-  // 미리보기 페이지 분할 + 배율 맞춤. 실제 인쇄(PDF)는 여백 있는 여러 장으로 나오므로,
-  // 편집기 미리보기도 페이지 사이에 실제 여백(위/아래)을 보여 준다(뒷장이 맨 위에 붙는 문제 해결).
+  // 미리보기 페이지 분할 + 배율 맞춤 (분할 로직은 공개 페이지와 공용: CVRender.layoutPages)
   function layoutPreview() {
     var page = el('cv-page');
-    page.style.transform = '';   // 측정은 배율 1 상태에서
-    Array.prototype.forEach.call(page.querySelectorAll('.pg-spacer, .pagebreak-marker'), function (n) { n.remove(); });
-    if (!page._empty) {
-      var paper = PAPER_PX[page._paper || 'a4'] || PAPER_PX.a4;
-      // 2단(사이드바) 레이아웃은 열 분할이 어려워 경계선만 표시
-      if (page.querySelector('.cols')) addPageMarkers({ paper: page._paper });
-      else paginatePreview(page, paper);
-    }
+    window.CVRender.layoutPages(page, page._paper, page._empty);
     fitPreview();
   }
 
-  // 콘텐츠를 용지 높이에 맞춰 나누고, 페이지 경계마다 여백(spacer)을 끼워 넣는다.
-  // 인쇄와 비슷하게: 섹션의 (제목+첫 항목)은 함께 유지하고 둘째 항목부터 사이에서 나눈다.
-  // 인쇄 시 spacer는 숨겨진다(@media print).
-  function paginatePreview(page, paper) {
-    var cs = getComputedStyle(page);
-    var padTop = parseFloat(cs.paddingTop) || 0;
-    var padBottom = parseFloat(cs.paddingBottom) || 0;
-    var availH = paper.h - padTop - padBottom;
-    if (availH < 220) return;
-    if (page.scrollHeight <= paper.h + 2) return;   // 한 페이지면 분할 불필요
-
-    function isSec(el) { return !!(el.classList && el.classList.contains('cv-sec')); }
-
-    // 분할 지점: { before(이 요소 앞에서 나눔), test(넘침 판정 기준 요소) }
-    // 섹션은 제목+첫 항목을 함께 두고, 그리드 레이아웃(예: 2단 references) 섹션은 통째로 취급.
-    var pts = [];
-    Array.prototype.forEach.call(page.children, function (child) {
-      if (!child.classList || child.classList.contains('pg-spacer') || child.classList.contains('pagebreak-marker')) return;
-      if (isSec(child)) {
-        var disp = getComputedStyle(child).display;
-        var entries = Array.prototype.filter.call(child.children, function (gc) { return gc.tagName !== 'H2'; });
-        if (/grid|flex/.test(disp) || entries.length <= 1) {
-          pts.push({ before: child, test: child });                 // 통째로
-        } else {
-          pts.push({ before: child, test: entries[0] });            // 제목+첫 항목이 안 들어가면 통째로 넘김
-          for (var k = 1; k < entries.length; k++) pts.push({ before: entries[k], test: entries[k] });
-        }
-      } else {
-        pts.push({ before: child, test: child });
-      }
-    });
-
-    var GUTTER = 26;                                 // 시트 사이 회색 간격
-    var pageTop = page.getBoundingClientRect().top;
-    var curBottom = pageTop + padTop + availH;        // 현재 페이지 콘텐츠 하단(화면 y)
-    var firstOnPage = 0, pageNo = 1, guard = 0;
-
-    // 방금 배치된 블록 이후의 다음 페이지 하단(화면 y). 한 페이지보다 큰 리프는 페이지 경계를 넘겨 잡는다.
-    function bottomAfter(before, topY) {
-      var b = topY + availH;
-      if (!isSec(before)) {   // 섹션은 내부 항목이 따로 분할되므로 그대로, 리프만 넘김 처리
-        var bot = before.getBoundingClientRect().bottom, g = 0;
-        while (bot > b + 0.5 && g++ < 40) b += availH;
-      }
-      return b;
-    }
-
-    for (var i = 0; i < pts.length && guard < 80; i++) {
-      var p = pts[i];
-      var tr = p.test.getBoundingClientRect();
-      if (tr.height === 0) continue;
-      if (tr.bottom <= curBottom + 0.5) continue;      // 현재 페이지에 들어감
-      if (i === firstOnPage) {                          // 첫 블록이라 앞에서 못 나눔 → 다음 경계만 갱신
-        curBottom = bottomAfter(p.before, p.before.getBoundingClientRect().top);
-        firstOnPage = i + 1; continue;
-      }
-      guard++;
-      var br = p.before.getBoundingClientRect();
-      // p.before 앞에서 페이지 나눔: 이전 페이지 남은 여백 + 시트 간격 + 다음 페이지 위 여백
-      var h = (curBottom + padBottom + GUTTER + padTop) - br.top;
-      if (h < GUTTER + 8) h = GUTTER + 8;              // 최소한 거터+라벨은 보이게
-      var grayEnd = Math.max(padTop + 2, Math.min(h - 2, h - padTop));   // 다음 시트 위 여백 시작
-      var whiteBot = Math.max(0, Math.min(grayEnd - 2, h - GUTTER - padTop)); // 이전 시트 끝(흰색)
-      var spacer = document.createElement('div');
-      spacer.className = 'pg-spacer';
-      spacer.style.height = h + 'px';
-      spacer.style.background = 'linear-gradient(to bottom, #fff 0, #fff ' + whiteBot + 'px, #e9ecf1 ' + whiteBot + 'px, #e9ecf1 ' + grayEnd + 'px, #fff ' + grayEnd + 'px, #fff 100%)';
-      var lbl = document.createElement('div');
-      lbl.className = 'pg-gaplabel';
-      lbl.style.top = ((whiteBot + grayEnd) / 2) + 'px';
-      lbl.textContent = '페이지 경계 (' + pageNo + ' → ' + (pageNo + 1) + ')';
-      spacer.appendChild(lbl);
-      p.before.parentNode.insertBefore(spacer, p.before);
-      pageNo++;
-      curBottom = bottomAfter(p.before, p.before.getBoundingClientRect().top);
-      firstOnPage = i;
-    }
-  }
+  var userZoom = null;   // null = 창 너비에 자동 맞춤, 숫자 = 사용자가 지정한 배율
+  var curScale = 1;
 
   function fitPreview() {
     var wrap = el('page-wrap'), page = el('cv-page'), scroll = el('preview-scroll');
     var pw = page.offsetWidth || 794; // transform과 무관한 레이아웃 폭 (용지별 794/816)
-    var avail = scroll.clientWidth - 44;
-    var scale = Math.min(1, avail / pw);
-    // 모바일에서 글자가 읽히도록 최소 배율 유지 — 넘치는 폭은 preview-scroll에서 가로 스크롤
-    if (scale < 0.62) scale = 0.62;
-    page.style.transform = scale < 1 ? 'scale(' + scale + ')' : '';
+    var scale;
+    if (userZoom != null) {
+      scale = userZoom;
+    } else {
+      var avail = scroll.clientWidth - 44;
+      scale = Math.min(1, avail / pw);
+      // 모바일에서 글자가 읽히도록 최소 배율 유지 — 넘치는 폭은 preview-scroll에서 가로 스크롤
+      if (scale < 0.62) scale = 0.62;
+    }
+    curScale = scale;
+    page.style.transform = scale !== 1 ? 'scale(' + scale + ')' : '';
     wrap.style.width = Math.round(pw * scale) + 'px';
     wrap.style.height = Math.round(page.offsetHeight * scale) + 'px';
   }
   window.addEventListener('resize', fitPreview);
+
+  /* ---------- Ctrl + 휠: 이력서만 확대/축소 (Ctrl+0 또는 배지 클릭 → 창 맞춤) ---------- */
+  function resetZoom() { userZoom = null; fitPreview(); showZoom(); }
+
+  var zoomTimer = null;
+  function showZoom() {
+    var b = el('zoom-badge');
+    if (!b) {
+      b = document.createElement('button');
+      b.id = 'zoom-badge';
+      b.type = 'button';
+      b.title = '클릭하면 창 너비에 맞춤 (Ctrl+0)';
+      b.addEventListener('click', resetZoom);
+      el('preview-pane').appendChild(b);
+    }
+    b.textContent = Math.round(curScale * 100) + '%' + (userZoom == null ? ' 맞춤' : '');
+    b.classList.add('show');
+    clearTimeout(zoomTimer);
+    zoomTimer = setTimeout(function () { b.classList.remove('show'); }, 1600);
+  }
+
+  function bindZoom() {
+    var scroll = el('preview-scroll');
+    scroll.addEventListener('wheel', function (ev) {
+      if (!ev.ctrlKey && !ev.metaKey) return;   // 일반 스크롤은 그대로
+      ev.preventDefault();                       // 브라우저 전체 확대 대신 이력서만
+      var before = curScale;
+      var next = Math.max(0.3, Math.min(3, before * (ev.deltaY < 0 ? 1.12 : 1 / 1.12)));
+      if (Math.abs(next - before) < 0.0005) return;
+      var r = scroll.getBoundingClientRect();
+      var ox = ev.clientX - r.left, oy = ev.clientY - r.top;   // 스크롤 영역 기준 커서 위치
+      var k = next / before;
+      userZoom = next;
+      fitPreview();
+      // 커서 아래에 있던 지점이 제자리에 남도록 스크롤 보정
+      scroll.scrollLeft = (scroll.scrollLeft + ox) * k - ox;
+      scroll.scrollTop = (scroll.scrollTop + oy) * k - oy;
+      showZoom();
+    }, { passive: false });
+
+    document.addEventListener('keydown', function (ev) {
+      if ((ev.ctrlKey || ev.metaKey) && ev.key === '0') { ev.preventDefault(); resetZoom(); }
+    });
+  }
 
   /* ================= 상단 바 / 프로필 ================= */
   function renderProfileSelect() {
@@ -805,21 +771,6 @@
     });
   }
 
-  /* ---------------- 페이지 경계 표시 ---------------- */
-  function addPageMarkers(spec) {
-    var page = el('cv-page');
-    // 용지 높이(96dpi: A4 1123px, Letter 1056px)마다 점선 표시 (Word 기준과는 근사치)
-    var paper = PAPER_PX[(spec && spec.paper) || 'a4'] || PAPER_PX.a4;
-    var total = page.scrollHeight;
-    for (var n = 1; n * paper.h < total - 40; n++) {
-      var m = document.createElement('div');
-      m.className = 'pagebreak-marker';
-      m.style.top = (n * paper.h) + 'px';
-      m.innerHTML = '<span>페이지 ' + n + ' 경계</span>';
-      page.appendChild(m);
-    }
-  }
-
   function applyTemplate(key) {
     var s = P().settings;
     var oldSpec = M.TEMPLATE_SPECS[s.template];
@@ -1010,6 +961,7 @@
   bindPhoto();
   bindFsync();
   bindPublish();
+  bindZoom();
   renderControls();
   bindEditor();
   renderEditor();

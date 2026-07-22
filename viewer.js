@@ -68,11 +68,13 @@
     page.style.setProperty('--accent', r.accent);
     page.style.setProperty('--link', r.link);
     page.innerHTML = r.html;
+    page._paper = r.paper;
+    page._empty = r.empty;
     setPrintPaper(current.settings);
-    fitPage();
-    // 사진 등 이미지가 늦게 로드되면 높이 재계산 (하단 잘림 방지)
+    layoutPage();
+    // 사진 등 이미지가 늦게 로드되면 페이지 분할·높이 재계산 (하단 잘림 방지)
     page.querySelectorAll('img').forEach(function (img) {
-      if (!img.complete) img.addEventListener('load', fitPage, { once: true });
+      if (!img.complete) img.addEventListener('load', layoutPage, { once: true });
     });
   }
 
@@ -86,6 +88,14 @@
     }
   }
 
+  // 편집기 미리보기와 동일한 페이지 분할을 적용한 뒤 배율을 맞춘다 (분할은 CVRender와 공용)
+  function layoutPage() {
+    var page = el('cv-page');
+    R.layoutPages(page, page._paper, page._empty);
+    fitPage();
+  }
+  window.addEventListener('resize', layoutPage);
+
   function fitPage() {
     var wrap = el('v-page-wrap'), page = el('cv-page');
     if (!page.offsetWidth) return;
@@ -98,7 +108,6 @@
     page.style.transformOrigin = 'top left';
     wrap.style.height = Math.round(page.offsetHeight * scale) + 'px';
   }
-  window.addEventListener('resize', fitPage);
 
   // Word 라이브러리는 필요할 때만 로드 (초기 페이지를 가볍게)
   function loadScript(src) {
@@ -112,7 +121,7 @@
   }
   function ensureDocx() {
     if (window.CVDocx) return Promise.resolve();
-    return loadScript('docx.iife.js').then(function () { return loadScript('docx-export.js?v=22'); });
+    return loadScript('docx.iife.js').then(function () { return loadScript('docx-export.js?v=23'); });
   }
 
   function setPrintPaper(settings) {
