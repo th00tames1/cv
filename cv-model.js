@@ -236,6 +236,14 @@
     }
   };
 
+  /* 항목형 섹션에 공통 '링크' 칸 추가 — 채우면 항목 끝에 [Link]가 표시되고 하이퍼링크가 걸린다.
+   * (projects는 이미 자체 link 칸이 있어 제외, 요약/관심사/스킬/언어/추천인은 링크가 무의미해 제외) */
+  ['education', 'experience', 'research', 'publications', 'presentations', 'conferences',
+   'teaching', 'awards', 'grants', 'certifications', 'service', 'volunteer',
+   'memberships', 'patents', 'custom'].forEach(function (t) {
+    if (SECTION_DEFS[t]) SECTION_DEFS[t].fields.push(F('link', '링크 (선택)', 'https://…', 'full'));
+  });
+
   var DEFAULT_ORDER = [
     'summary', 'research_interests', 'education', 'experience', 'research',
     'publications', 'presentations', 'conferences', 'projects', 'teaching', 'awards', 'grants',
@@ -469,8 +477,28 @@
       if (opts.sc) r.sc = 1;
       if (opts.c) r.c = opts.c;
       if (opts.sz) r.sz = opts.sz;
+      if (opts.href) r.href = opts.href;   // 하이퍼링크 (HTML <a> / Word ExternalHyperlink)
     }
     return r;
+  }
+
+  // 항목 끝에 붙는 [Link] 런
+  function linkRun(url) { return R('[Link]', { href: webHref(url) }); }
+
+  // 런 목록 끝에 [Link] 이어 붙이기 (이미 공백으로 끝나면 공백을 더하지 않음 → Word에서 이중 공백 방지)
+  function withLink(runs, url) {
+    var last = runs[runs.length - 1];
+    var sep = (last && /\s$/.test(String(last.t))) ? [] : [R(' ')];
+    return runs.concat(sep, [linkRun(url)]);
+  }
+
+  // 항목의 마지막 줄(또는 인용문) 끝에 [Link] 추가
+  function appendLink(vm, url) {
+    if (!vm || !trim(url)) return vm;
+    if (vm.cite) vm.cite = withLink(vm.cite, url);
+    else if (vm.lines && vm.lines.length) vm.lines[vm.lines.length - 1].left = withLink(vm.lines[vm.lines.length - 1].left, url);
+    else if (vm.lines) vm.lines.push({ left: [linkRun(url)], right: null });
+    return vm;
   }
   function RB(t) { return R(t, { b: 1 }); }
   function RI(t) { return R(t, { i: 1 }); }
@@ -541,7 +569,11 @@
     projects: function (e) {
       var title = trim(e.name);
       if (trim(e.role)) title = title ? title + ' — ' + trim(e.role) : trim(e.role);
-      return { title: title, org: joinParts([e.tech, e.link], '  ·  '), loc: '', period: trim(e.period), details: [], bullets: linesOf(e.desc) };
+      // 프로젝트에는 '기관'이 없다. 기술 스택을 기관 자리에 넣으면 기관 우선 조판(Harvard·Awesome 등)에서
+      // 기술 스택이 제목처럼 굵게 나오므로 별도 줄로 분리한다. link는 항목 끝 [Link]로 표시.
+      var details = [];
+      if (trim(e.tech)) details.push([R(trim(e.tech))]);
+      return { title: title, org: '', loc: '', period: trim(e.period), details: details, bullets: linesOf(e.desc) };
     },
     grants: function (e) {
       var details = [];
@@ -633,6 +665,11 @@
       if (org) push([RI(org)], null);
     }
 
+    // [Link]는 상세줄(지도교수·심사위원 등)보다 앞, 머리줄 끝에 붙인다
+    if (trim(h.link)) {
+      if (lines.length) lines[lines.length - 1].left = withLink(lines[lines.length - 1].left, h.link);
+      else lines.push({ left: [linkRun(h.link)], right: null });
+    }
     (h.details || []).forEach(function (runs) { lines.push({ left: runs, right: null }); });
     return lines;
   }
@@ -657,7 +694,7 @@
       if (trim(e.venue)) runs.push(RI(e.venue));
       if (trim(e.volpages)) runs.push(R(', ' + trim(e.volpages)));
       if (trim(e.venue) || trim(e.volpages)) runs.push(R('. '));
-      if (trim(e.doi)) runs.push(R(dot(e.doi) + ' '));
+      if (trim(e.doi)) { runs.push(R(dot(e.doi), { href: webHref(e.doi) })); runs.push(R(' ')); }
       var st = trim(e.status);
       if (st && st !== 'Published') {
         // 알려진 상태는 관례적 표기로, 직접 입력한 상태는 그대로 표시
@@ -782,15 +819,19 @@
       PUB_GROUPS.forEach(function (g) {
         var items = entries
           .filter(function (e) { return (e.ptype || 'other') === g[0]; })
-          .map(function (e) { return VMS.publications(e, settings); })
+          .map(function (e) { return appendLink(VMS.publications(e, settings), e.link); })
           .filter(Boolean);
         if (items.length) groups.push({ label: g[1], numbered: true, items: items });
       });
       if (groups.length === 1) groups[0].label = null;
     } else if (HEADS[section.type]) {
       // 블록형: 구조화 → 템플릿 스타일로 조판
+      // 기관을 굵게 앞세우는 조판들 — 프로젝트는 '기관'이 없으므로 프로젝트명을 그 자리에 둔다
+      var ORG_FIRST = { 'org-first': 1, awesome: 1, stockholm: 1, europass: 1 };
       var items2 = entries.map(function (e) {
         var h = HEADS[section.type](e);
+        h.link = trim(e.link);
+        if (section.type === 'projects' && ORG_FIRST[style]) { h.org = trim(e.name); h.title = trim(e.role); }
         var lines = composeHead(style, h, spec);
         if (!lines.length && !h.bullets.length) return null;
         return { lines: lines, bullets: h.bullets };
@@ -798,7 +839,7 @@
       if (!items2.length) return null;
       groups = [{ label: null, numbered: false, items: items2 }];
     } else {
-      var items3 = entries.map(function (e) { return VMS[section.type](e, settings); }).filter(Boolean);
+      var items3 = entries.map(function (e) { return appendLink(VMS[section.type](e, settings), e.link); }).filter(Boolean);
       if (!items3.length) return null;
       groups = [{ label: null, numbered: false, items: items3 }];
     }

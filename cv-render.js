@@ -58,6 +58,7 @@
       if (r.c) cls.push('r-' + r.c);
       if (r.sz) cls.push('r-' + r.sz);
       if (cls.length) t = '<span class="' + cls.join(' ') + '">' + t + '</span>';
+      if (r.href) t = '<a href="' + esc(r.href) + '" target="_blank" rel="noopener">' + t + '</a>';
       return t;
     }).join('');
   }
@@ -242,7 +243,7 @@
       html += mainParts.join('');
     }
 
-    return { html: html, className: className, accent: accent, paper: spec.paper || 'a4', empty: !hasHeader && !any };
+    return { html: html, className: className, accent: accent, link: linkColor(accent), paper: spec.paper || 'a4', empty: !hasHeader && !any };
   }
 
   // 원형 크롭 (Word 내보내기용, AltaCV 등)

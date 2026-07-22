@@ -146,10 +146,14 @@
       var size = extra.size || o.sz.base;
       if (r.sz === 'small') size = o.sz.meta;
       else if (r.sz === 'big') size = o.sz.base + 3;
-      return new TextRun({
+      var run = new TextRun({
         text: r.t, bold: !!r.b || !!extra.bold, italics: !!r.i || !!extra.italics,
-        smallCaps: !!r.sc, size: size, color: color, font: extra.font
+        smallCaps: !!r.sc, size: size, font: extra.font,
+        // 링크는 색+밑줄로 구분 (어두운 배경에서는 forceColor를 그대로 사용)
+        color: r.href ? (extra.forceColor || linkColorDocx(o)) : color,
+        underline: r.href ? {} : undefined
       });
+      return (r.href && ExternalHyperlink) ? new ExternalHyperlink({ link: r.href, children: [run] }) : run;
     });
   }
 

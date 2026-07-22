@@ -172,6 +172,9 @@ input, select, textarea { font-family: inherit; font-size: 13px; color: #23272f;
 .cv-name { font-weight: 700; margin: 0; }
 .cv-title { margin: 2px 0 0; color: #333; }
 .cv-contact { color: #444; margin: 3px 0 0; }
+/* CV 본문 하이퍼링크(항목 끝의 [Link], DOI 등) — 링크임을 알 수 있게 강조색으로 */
+.page a { color: var(--link, #0f4c81); text-decoration: none; }
+.page a:hover { text-decoration: underline; }
 /* 연락처 하이퍼링크: 링크임을 알 수 있게 강조색(검정 계열 템플릿은 링크용 파랑)으로 표시 */
 .cv-contact a, .cv-head-contact a {
   color: var(--link, #0f4c81); text-decoration: none;

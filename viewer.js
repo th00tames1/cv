@@ -66,6 +66,7 @@
     var page = el('cv-page');
     page.className = r.className;
     page.style.setProperty('--accent', r.accent);
+    page.style.setProperty('--link', r.link);
     page.innerHTML = r.html;
     setPrintPaper(current.settings);
     fitPage();
@@ -111,7 +112,7 @@
   }
   function ensureDocx() {
     if (window.CVDocx) return Promise.resolve();
-    return loadScript('docx.iife.js').then(function () { return loadScript('docx-export.js?v=21'); });
+    return loadScript('docx.iife.js').then(function () { return loadScript('docx-export.js?v=22'); });
   }
 
   function setPrintPaper(settings) {
