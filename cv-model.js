@@ -187,6 +187,31 @@
         F('desc', '설명', '', 'full')
       ]
     },
+    media: {
+      // 언론·매체가 나/연구를 다룬 것 (신문·방송·잡지·온라인·마케팅). 기본 꺼짐.
+      title: 'Media Coverage', ko: '언론·미디어 보도', tight: true, defaultOff: true,
+      fields: [
+        F('outlet', '매체명', '예: Oregon Public Broadcasting', 'full'),
+        F('mtype', '유형 (직접 입력 가능)', '예: Broadcast', 'half', 'combo',
+          [['Newspaper', 'Newspaper (신문)'], ['Broadcast', 'Broadcast (방송·TV/라디오)'], ['Magazine', 'Magazine (잡지)'],
+           ['Online', 'Online (온라인)'], ['Marketing', 'Marketing (마케팅)'], ['Interview', 'Interview (인터뷰)']]),
+        F('date', '날짜', 'May 2025', 'half'),
+        F('title', '제목·설명', '예: Drones and iPads reshape forest measurement', 'full')
+      ]
+    },
+    outreach: {
+      // 내가 직접 연구를 시연·발표·전시한 홍보 활동 (학과 행사, 기관 방문 등). 기본 꺼짐.
+      title: 'Outreach & Demonstrations', ko: '연구 홍보·시연', tight: true, defaultOff: true,
+      fields: [
+        F('event', '행사·대상', '예: OSU Board of Visitors', 'full'),
+        F('role', '역할 (직접 입력 가능)', '예: Demonstration', 'half', 'combo',
+          [['Demonstration', 'Demonstration (시연)'], ['Presentation', 'Presentation (발표)'], ['Exhibit', 'Exhibit (전시)'],
+           ['Host / Tour', 'Host / Tour (안내)'], ['Judge', 'Judge (심사)']], 'Demonstration'),
+        F('location', '장소', 'Corvallis, OR', 'half'),
+        F('date', '날짜', '2025', 'half'),
+        F('note', '설명 (선택)', '', 'full')
+      ]
+    },
     volunteer: {
       title: 'Volunteer Experience', ko: '봉사활동',
       fields: [
@@ -239,7 +264,7 @@
   /* 항목형 섹션에 공통 '링크' 칸 추가 — 채우면 항목 끝에 [Link]가 표시되고 하이퍼링크가 걸린다.
    * (projects는 이미 자체 link 칸이 있어 제외, 요약/관심사/스킬/언어/추천인은 링크가 무의미해 제외) */
   ['education', 'experience', 'research', 'publications', 'presentations', 'conferences',
-   'teaching', 'awards', 'grants', 'certifications', 'service', 'volunteer',
+   'teaching', 'awards', 'grants', 'certifications', 'service', 'media', 'outreach', 'volunteer',
    'memberships', 'patents', 'custom'].forEach(function (t) {
     if (SECTION_DEFS[t]) SECTION_DEFS[t].fields.push(F('link', '링크 (선택)', 'https://…', 'full'));
   });
@@ -247,7 +272,7 @@
   var DEFAULT_ORDER = [
     'summary', 'research_interests', 'education', 'experience', 'research',
     'publications', 'presentations', 'conferences', 'projects', 'teaching', 'awards', 'grants',
-    'skills', 'languages', 'certifications', 'service', 'volunteer',
+    'skills', 'languages', 'certifications', 'service', 'outreach', 'media', 'volunteer',
     'memberships', 'patents', 'references'
   ];
 
@@ -724,6 +749,25 @@
       var lines = [{ left: l1, right: trim(e.date) ? [R(e.date)] : null }];
       var l2 = joinParts([e.role, e.organizer, e.location], '  ·  ');
       if (l2) lines.push({ left: [R(l2)], right: null });
+      if (trim(e.note)) lines.push({ left: [R(e.note)], right: null });
+      return { lines: lines, bullets: [] };
+    },
+    media: function (e) {
+      // 매체명(굵게) · 유형        [오른쪽] 날짜   /   제목·설명
+      var l1 = [];
+      if (trim(e.outlet)) l1.push(RB(e.outlet));
+      if (trim(e.mtype)) l1.push(R((l1.length ? '  ·  ' : '') + trim(e.mtype)));
+      var lines = [{ left: l1, right: trim(e.date) ? [R(e.date)] : null }];
+      if (trim(e.title)) lines.push({ left: [R(e.title)], right: null });
+      return { lines: lines, bullets: [] };
+    },
+    outreach: function (e) {
+      // 행사·대상(굵게) · 역할        [오른쪽] 날짜   /   장소   /   설명
+      var l1 = [];
+      if (trim(e.event)) l1.push(RB(e.event));
+      if (trim(e.role)) l1.push(R((l1.length ? '  ·  ' : '') + trim(e.role)));
+      var lines = [{ left: l1, right: trim(e.date) ? [R(e.date)] : null }];
+      if (trim(e.location)) lines.push({ left: [R(e.location)], right: null });
       if (trim(e.note)) lines.push({ left: [R(e.note)], right: null });
       return { lines: lines, bullets: [] };
     },

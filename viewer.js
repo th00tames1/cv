@@ -121,7 +121,7 @@
   }
   function ensureDocx() {
     if (window.CVDocx) return Promise.resolve();
-    return loadScript('docx.iife.js').then(function () { return loadScript('docx-export.js?v=23'); });
+    return loadScript('docx.iife.js').then(function () { return loadScript('docx-export.js?v=24'); });
   }
 
   function setPrintPaper(settings) {
