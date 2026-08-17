@@ -304,8 +304,8 @@
       var lastBullet = ii === bullets.length - 1;
       out.push(new Paragraph({
         children: [new TextRun({ text: b, size: o.sz.base, color: opts.textColor })],
-        bullet: o.cfg.bulletDash ? undefined : { level: 0 },
-        numbering: o.cfg.bulletDash ? { reference: 'cv-dash', level: 0 } : undefined,
+        // 기본 불릿(●)은 Word에서 지나치게 큼 → 표준 크기(•) 커스텀 넘버링 사용
+        numbering: { reference: o.cfg.bulletDash ? 'cv-dash' : 'cv-bullet', level: 0 },
         spacing: { after: lastBullet ? (opts.isLastBlock ? o.sp.tight : o.sp.block) : o.sp.line }
       }));
     });
@@ -919,6 +919,13 @@
           reference: 'cv-dash',
           levels: [{
             level: 0, format: LevelFormat.BULLET, text: '–', alignment: AlignmentType.LEFT,
+            style: { paragraph: { indent: { left: 360, hanging: 180 } } }
+          }]
+        }, {
+          // 표준 크기 불릿(•) — 미리보기의 disc 마커와 시각적으로 동일한 급
+          reference: 'cv-bullet',
+          levels: [{
+            level: 0, format: LevelFormat.BULLET, text: '•', alignment: AlignmentType.LEFT,
             style: { paragraph: { indent: { left: 360, hanging: 180 } } }
           }]
         }]
