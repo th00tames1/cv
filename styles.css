@@ -172,16 +172,20 @@ input, select, textarea { font-family: inherit; font-size: 13px; color: #23272f;
   transform-origin: top left;
 }
 
-/* ================= CV 공통 ================= */
-.page { color: #1a1a1a; line-height: 1.42; }
+/* ================= CV 공통 =================
+ * 줄 높이는 폰트 기본(normal) = Word의 '단일 줄 간격'과 동일 메트릭.
+ * 크기·간격은 renderCv가 Word와 같은 표에서 계산해 CSS 변수로 주입:
+ *   --fs-*(글자 크기 px), --spl/spb/spt(줄·항목 간격), --sphb/spha(섹션 위·아래), --spc(서지)
+ */
+.page { color: #1a1a1a; line-height: normal; }
 .page.paper-a4     { width: 794px; min-height: 1123px; }
 .page.paper-letter { width: 816px; min-height: 1056px; }
-.cv-head { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 20px; }
+.cv-head { display: flex; flex-wrap: wrap; align-items: center; gap: 0 20px; margin-bottom: var(--spt, 3px); }
 .cv-head-text { flex: 1 1 auto; min-width: 0; }
-.cv-headrule { border: none; margin: 10px 0 0; flex-basis: 100%; }
-.cv-name { font-weight: 700; margin: 0; }
-.cv-title { margin: 2px 0 0; color: #333; }
-.cv-contact { color: #444; margin: 3px 0 0; }
+.cv-headrule { border: none; margin: 1.3px 0 0; flex-basis: 100%; }
+.cv-name { font-weight: 700; margin: 0 0 2.7px; }
+.cv-title { margin: 0 0 4px; color: #333; }
+.cv-contact { color: #444; margin: 0 0 2px; }
 /* CV 본문 하이퍼링크(항목 끝의 [Link], DOI 등) — 링크임을 알 수 있게 강조색으로 */
 .page a { color: var(--link, #0f4c81); text-decoration: none; }
 .page a:hover { text-decoration: underline; }
@@ -202,26 +206,31 @@ input, select, textarea { font-family: inherit; font-size: 13px; color: #23272f;
 .cv-photo { width: 96px; height: auto; flex: none; order: 2; }
 .cv-photo.round { width: 104px; height: 104px; object-fit: cover; border-radius: 50%; }
 .cv-photo.framed { border: 2px solid var(--accent); } /* moderncv 공식 액자형 */
-.cv-sec h2 { margin: 0; }
-.cv-sub { font-weight: 600; font-style: italic; color: #333; margin: 7px 0 3px; }
-.entry { margin-bottom: 9px; }
-.entry.tight { margin-bottom: 2.5px; }
-.entry:last-child { margin-bottom: 0; }
-.line { display: flex; justify-content: space-between; gap: 14px; }
+/* 섹션·항목 간격: Word와 동일 값 (변수는 renderCv 주입) */
+.cv-sec { margin-top: var(--sphb, 15px); }
+.cv-head + .cv-sec, .page > .cv-sec:first-child, .col-main > .cv-sec:first-child, .col-side > .cv-sec:first-child { margin-top: calc(var(--sphb, 15px) * .4); }
+.cv-sec h2 { margin: 0 0 var(--spha, 6px); }
+.cv-sub { font-weight: 600; font-style: italic; color: #333; margin: calc(var(--spt, 3px) * 2) 0 var(--spt, 3px); }
+.entry { margin-bottom: var(--spb, 7px); }
+.entry.tight { margin-bottom: var(--spt, 3px); }
+.cv-sec .entry:last-child { margin-bottom: var(--spt, 3px); }
+.line { display: flex; justify-content: space-between; gap: 14px; margin-bottom: var(--spl, 1.3px); }
+.entry .line:last-child { margin-bottom: 0; }
 .line .right { color: #555; white-space: nowrap; flex: none; }
-.entry ul { margin: 2px 0 0; padding-left: 20px; }
-.entry ul li { margin: 1px 0; }
-.cite { padding-left: 22px; text-indent: -22px; margin-bottom: 5px; }
-.cite.nohang { padding-left: 0; text-indent: 0; }
-.cite:last-child { margin-bottom: 0; }
+.entry ul { margin: var(--spl, 1.3px) 0 0; padding-left: 24px; } /* Word 불릿 들여쓰기(0.25in)와 동일 */
+.entry ul li { margin: 0 0 var(--spl, 1.3px); }
+.entry ul li:last-child { margin-bottom: 0; }
+.cite { padding-left: 24px; text-indent: -24px; margin-bottom: var(--spc, 5px); }
+.cites-flat .cite, .cite.nohang { padding-left: 0; text-indent: 0; }
+.cite:last-child { margin-bottom: var(--spt, 3px); }
 
 /* 런 스타일 (뷰모델 run 플래그) */
 .r-sc { font-variant: small-caps; letter-spacing: .02em; }
 .r-accent { color: var(--accent); }
 .r-muted { color: #5d5d5d; }
 .r-light { color: #999; }
-.r-small { font-size: .88em; }
-.r-big { font-size: 1.1em; }
+.r-small { font-size: var(--fs-meta, .88em); }
+.r-big { font-size: var(--fs-big, 1.1em); }
 
 /* 왼쪽 날짜/힌트 열 (ModernCV 계열) */
 .entry.ld { display: grid; grid-template-columns: 17.5% 1fr; column-gap: 2.5%; }
@@ -231,7 +240,7 @@ input, select, textarea { font-family: inherit; font-size: 13px; color: #23272f;
 /* 사이드바 (AltaCV/Stockholm/Cascade 계열) */
 .cols { display: grid; grid-template-columns: 1fr 36.5%; column-gap: 42px; align-items: start; }
 .cols.side-left { grid-template-columns: 34% 1fr; }
-.col-side .cv-sec h2 { font-size: 1.02em; }
+.col-side .cv-sec h2 { font-size: calc(var(--fs-base, 16px) + 1.34px); } /* Word 사이드 제목 = 본문 +1pt */
 
 /* Stockholm 스킬/언어 언더라인 바 */
 .bar-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; margin: 4px 0 7px; }
@@ -262,105 +271,90 @@ input, select, textarea { font-family: inherit; font-size: 13px; color: #23272f;
 .dot.on { background: var(--accent); }
 .ld-note { font-size: .82em; color: #5d5d5d; margin: -1px 0 3px; }
 
-/* 글자 크기 프리셋 */
-/* 96dpi: 10.5pt=14px, 11pt=14.7px, 12pt=16px — Word 출력(SIZES)과 동일한 pt */
+/* 글자 크기: Word와 동일 pt (변수 주입, 클래스는 폴백) */
 .page.size-small  { font-size: 14px; }
 .page.size-medium { font-size: 14.7px; }
 .page.size-large  { font-size: 16px; }
-.page .cv-name    { font-size: 2.05em; }
-.page .cv-title   { font-size: 1.08em; }
-.page .cv-contact { font-size: 0.9em; }
-.page .cv-sec h2  { font-size: 1.1em; }
-.page .line .right{ font-size: 0.9em; }
+.page { font-size: var(--fs-base, 16px); }
+.page .cv-name    { font-size: var(--fs-name, 2.05em); }
+.page .cv-title   { font-size: var(--fs-title, 1.08em); }
+.page .cv-contact { font-size: var(--fs-meta, 0.9em); }
+.page .cv-sec h2  { font-size: var(--fs-h2, 1.1em); }
+.page .line .right{ font-size: var(--fs-meta, 0.9em); }
+.entry.ld .dcol   { font-size: var(--fs-meta, 0.9em); }
 
 /* ============ Harvard Academic (GSAS 가이드 실측) ============ */
 /* Times 11pt, 이름 16pt 굵은 대문자 중앙, 섹션 = 본문 크기 굵은 대문자 중앙, 선·색 없음 */
 .page.tpl-harvard { font-family: "Times New Roman", Times, serif; padding: 72px; }
 .tpl-harvard .cv-head-text { width: 100%; text-align: center; }
-.tpl-harvard .cv-name { font-size: 1.5em; text-transform: uppercase; }
-.tpl-harvard .cv-title { font-size: 1em; color: #1a1a1a; }
+.tpl-harvard .cv-name { text-transform: uppercase; }
+.tpl-harvard .cv-title { color: #1a1a1a; }
 .tpl-harvard .cv-headrule { display: none; }
-.tpl-harvard .cv-sec { margin-top: 17px; }
-.tpl-harvard .cv-sec h2 {
-  font-size: 1em; font-weight: 700; text-transform: uppercase;
-  text-align: center; margin-bottom: 8px;
-}
-.tpl-harvard .entry ul { list-style: none; padding-left: 16px; }
+.tpl-harvard .cv-sec h2 { font-weight: 700; text-transform: uppercase; text-align: center; }
+.tpl-harvard .entry ul { list-style: none; padding-left: 24px; }
 .tpl-harvard .entry ul li::before { content: "–  "; }
-.tpl-harvard .cite { padding-left: 0; text-indent: 0; }
 
 /* ============ ModernCV classic (v2.6.1 소스 검증) ============ */
 /* 이름 투톤(#B9B9B9/#737373) 일반 굵기, 연락처 오른쪽 상단, 파란 섹션 바+힌트 열 */
-.page.tpl-moderncv { font-family: "Segoe UI", Calibri, "Helvetica Neue", sans-serif; padding: 91px; } /* 24mm */
+.page.tpl-moderncv { font-family: Calibri, "Segoe UI", "Helvetica Neue", sans-serif; padding: 91px; } /* 24mm */
 .tpl-moderncv .cv-head.head-split { align-items: flex-end; }
-.tpl-moderncv .cv-name { font-weight: 400; font-size: 2.55em; line-height: 1.05; }
+.tpl-moderncv .cv-name { font-weight: 400; }
 .tpl-moderncv .cv-name .nm-first { color: #B9B9B9; }
 .tpl-moderncv .cv-name .nm-last { color: #737373; }
 .tpl-moderncv .cv-title { font-style: italic; color: #737373; }
 .tpl-moderncv .cv-head-contact {
-  order: 2; text-align: right; font-size: .82em; font-style: italic;
-  color: #737373; line-height: 1.5; flex: none;
+  order: 2; text-align: right; font-size: var(--fs-meta, .82em); font-style: italic;
+  color: #737373; flex: none;
 }
+.tpl-moderncv .cv-head-contact div { margin-bottom: 1.3px; }
 .tpl-moderncv .cv-photo { order: 3; width: 96px; }
-.tpl-moderncv .cv-headrule { display: none; margin: 4px 0 0; }
-.tpl-moderncv .cv-sec { margin-top: 15px; }
+.tpl-moderncv .cv-headrule { display: none; }
 .tpl-moderncv .cv-sec h2 {
   display: grid; grid-template-columns: 17.5% 1fr; column-gap: 2.5%;
-  align-items: center; font-weight: 400; font-size: 1.3em; color: var(--accent);
-  margin-bottom: 7px;
+  align-items: center; font-weight: 400; color: var(--accent);
 }
 .tpl-moderncv .cv-sec h2::before { content: ""; height: .58em; background: var(--accent); }
 .tpl-moderncv .cv-sec.ll h2, .tpl-moderncv .col-side h2 { display: block; }
 .tpl-moderncv .cv-sub { margin-left: 20%; color: var(--accent); font-style: normal; }
 .tpl-moderncv .entry.ld .dcol { color: #1a1a1a; }
-.tpl-moderncv .entry { margin-bottom: 6px; }
 /* 힌트 열이 없는 블록(요약 등)도 본문 열에 정렬 */
 .tpl-moderncv .cv-sec .entry:not(.ld), .tpl-moderncv .cv-sec .cite:not(.ld .cite) { margin-left: 20%; }
 .tpl-moderncv .entry.ld { margin-left: 0; }
 
 /* ============ Awesome-CV (posquit0, 28k★) ============ */
 /* 가는 이름+굵은 성, 스몰캡스 직함(강조색), 섹션 첫 3글자 강조색 + 회색 선 */
-.page.tpl-awesome { font-family: "Segoe UI", Calibri, Roboto, sans-serif; padding: 76px; } /* 20mm */
+.page.tpl-awesome { font-family: Calibri, "Segoe UI", Roboto, sans-serif; padding: 76px; } /* 20mm */
 .tpl-awesome .cv-head-text { width: 100%; text-align: center; }
-.tpl-awesome .cv-name { font-size: 2.9em; font-weight: 300; line-height: 1.1; }
+.tpl-awesome .cv-name { font-weight: 300; }
 .tpl-awesome .cv-name .nm-first { color: #5D5D5D; font-weight: 300; }
 .tpl-awesome .cv-name .nm-last { color: #333; font-weight: 700; }
 .tpl-awesome .cv-title {
-  font-variant: small-caps; color: var(--accent); font-size: .92em; letter-spacing: .06em;
+  font-variant: small-caps; color: var(--accent); font-size: var(--fs-meta, .92em); letter-spacing: .06em;
 }
-.tpl-awesome .cv-contact { font-size: .8em; color: #5D5D5D; }
+.tpl-awesome .cv-contact { color: #5D5D5D; }
 .tpl-awesome .cv-photo { order: 0; width: 92px; }
 .tpl-awesome .cv-headrule { display: none; }
-.tpl-awesome .cv-sec { margin-top: 13px; }
-.tpl-awesome .cv-sec h2 {
-  display: flex; align-items: baseline; font-size: 1.32em; font-weight: 700;
-  color: #333; margin-bottom: 5px;
-}
+.tpl-awesome .cv-sec h2 { display: flex; align-items: baseline; font-weight: 700; color: #333; }
 .tpl-awesome .cv-sec h2 .h-acc { color: var(--accent); }
 .tpl-awesome .cv-sec h2 .hfill {
   flex: 1; border-bottom: 1.4px solid #5D5D5D; margin-left: 9px;
   transform: translateY(-.32em);
 }
 .tpl-awesome .line .right { color: #5D5D5D; font-style: italic; }
-.tpl-awesome .entry { margin-bottom: 7px; }
 
 /* ============ AltaCV v1.7.4 (Marissa Mayer 스타일) ============ */
 /* 원형 사진 오른쪽, 본문 60% + 사이드 40%, 대문자 섹션 + 금색 밑줄, 점선 구분선 */
-.page.tpl-altacv { font-family: "Segoe UI", Calibri, Lato, sans-serif; padding: 57px 47px; }
-.tpl-altacv .cv-name { font-size: 2em; text-transform: uppercase; letter-spacing: .01em; }
+.page.tpl-altacv { font-family: Calibri, "Segoe UI", Lato, sans-serif; padding: 57px 47px; }
+.tpl-altacv .cv-name { text-transform: uppercase; letter-spacing: .01em; }
 .tpl-altacv .cv-title { font-weight: 700; color: var(--accent); }
-.tpl-altacv .cv-contact { font-size: .84em; color: #444; }
+.tpl-altacv .cv-contact { color: #444; }
 .tpl-altacv .cv-headrule { display: none; }
-.tpl-altacv .cols { margin-top: 6px; }
-.tpl-altacv .cv-sec { margin-top: 14px; }
 .tpl-altacv .cv-sec h2 {
-  font-size: 1.28em; font-weight: 700; text-transform: uppercase;
+  font-weight: 700; text-transform: uppercase;
   color: var(--accent); border-bottom: 2.5px solid #E7D192; padding-bottom: 1px;
-  margin-bottom: 7px;
 }
-.tpl-altacv .col-side .cv-sec h2 { font-size: 1.05em; }
 .tpl-altacv .col-main .entry:not(:last-child) {
-  border-bottom: 1px dashed #D1D1D1; padding-bottom: 8px;
+  border-bottom: 1px dashed #D1D1D1; padding-bottom: var(--spt, 3px);
 }
 .tpl-altacv .entry { color: #555; }
 .tpl-altacv .entry .line:first-child { color: #2E2E2E; }
@@ -371,23 +365,23 @@ input, select, textarea { font-family: inherit; font-size: 13px; color: #23272f;
   background: #F5F5F5; margin: -76px -76px 0; padding: 44px 76px 20px;
   -webkit-print-color-adjust: exact; print-color-adjust: exact;
 }
-.tpl-europass .cv-name { color: #565656; font-size: 1.55em; font-weight: 800; }
-.tpl-europass .cv-title { font-size: .98em; color: #565656; }
-.tpl-europass .cv-contact { font-size: .85em; color: #565656; }
+.tpl-europass .cv-name { color: #565656; font-weight: 800; }
+.tpl-europass .cv-title { color: #565656; }
+.tpl-europass .cv-contact { color: #565656; }
 .tpl-europass .cv-photo { order: 0; }
 .tpl-europass .cv-photo.round { width: 86px; height: 86px; border: 2px solid #C6C6C6; }
 .tpl-europass .cv-headrule { border-top: 2px solid #979797; margin-top: 8px; }
-.tpl-europass .cv-sec { margin-top: 16px; }
+.tpl-europass .cv-head { margin-bottom: calc(var(--spb, 7px) * .9); }
 .tpl-europass .cv-sec h2 {
-  font-size: 1em; font-weight: 800; text-transform: uppercase; color: #444;
-  border-bottom: 1px solid #979797; padding-bottom: 3px; margin-bottom: 9px;
+  font-weight: 800; text-transform: uppercase; color: #444;
+  border-bottom: 1px solid #979797; padding-bottom: 3px;
   display: flex; align-items: center; gap: 7px;
 }
 .tpl-europass .cv-sec h2::before {
   content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex: none;
 }
 .tpl-europass .cv-sec .entry:not(.tight)::after {
-  content: ""; display: block; width: 50%; border-bottom: 1px solid #ddd; margin-top: 5px;
+  content: ""; display: block; width: 50%; border-bottom: 1px solid #ddd; margin-top: var(--spt, 3px);
 }
 .tpl-europass .cv-sec .entry:not(.tight):last-child::after { display: none; }
 
@@ -405,60 +399,45 @@ input, select, textarea { font-family: inherit; font-size: 13px; color: #23272f;
   background: #F0F2F5; padding: 16px 16px 18px; border-radius: 6px;
   -webkit-print-color-adjust: exact; print-color-adjust: exact;
 }
-.tpl-canva .cv-sec { margin-top: 15px; }
 .tpl-canva .col-side .cv-sec:first-child { margin-top: 0; }
 .tpl-canva .cv-sec h2 {
-  font-size: .92em; font-weight: 700; text-transform: uppercase; letter-spacing: .1em;
-  color: #37474F; border-bottom: 1px solid #C9CED6; padding-bottom: 3px; margin-bottom: 7px;
+  font-weight: 700; text-transform: uppercase; letter-spacing: 1.33px; /* Word charSpace 1pt */
+  color: #37474F; border-bottom: 1px solid #C9CED6; padding-bottom: 3px;
 }
 .tpl-canva .line .right { color: #8A9199; }
-.tpl-canva .entry { margin-bottom: 9px; }
 
 /* ============ Banking / Consulting (월가 표준) ============ */
-.page.tpl-banking { font-family: "Times New Roman", Times, serif; padding: 72px; line-height: 1.28; } /* 19mm */
+.page.tpl-banking { font-family: "Times New Roman", Times, serif; padding: 72px; } /* 19mm */
 .tpl-banking .cv-head-text { width: 100%; text-align: center; }
-.tpl-banking .cv-name { font-size: 1.58em; font-weight: 400; } /* Word와 동일: ~19pt 일반 굵기 */
-.tpl-banking .cv-title { font-size: 1em; }
-.tpl-banking .cv-headrule { border-top: 1.2px solid #000; margin-top: 5px; }
-.tpl-banking .cv-sec { margin-top: 10px; }
+.tpl-banking .cv-name { font-weight: 400; } /* Word와 동일: ~19pt 일반 굵기 */
+.tpl-banking .cv-headrule { display: none; } /* Word와 동일: 헤더 밑줄 없음 */
 .tpl-banking .cv-sec h2 {
-  font-size: 1.02em; font-weight: 700; text-transform: uppercase;
-  border-bottom: 1px solid #000; padding-bottom: 1px; margin-bottom: 4px;
+  font-weight: 700; text-transform: uppercase;
+  border-bottom: 1px solid #000; padding-bottom: 1px;
 }
-.tpl-banking .entry { margin-bottom: 6px; }
 /* 원본(WSO·Harvard 가이드)은 날짜·지역도 순수 검정 */
 .tpl-banking .line .right, .tpl-harvard .line .right { color: #1a1a1a; }
-.tpl-banking .entry.tight { margin-bottom: 1px; }
-.tpl-banking .entry ul { margin-top: 1px; }
 
 /* ============ Jake's Resume (jakegut/resume 실측) ============ */
-.page.tpl-jake { font-family: Cambria, Georgia, "Times New Roman", serif; padding: 49px; line-height: 1.32; } /* 13mm */
+.page.tpl-jake { font-family: Cambria, Georgia, "Times New Roman", serif; padding: 49px; } /* 13mm */
 .tpl-jake .cv-head-text { width: 100%; text-align: center; }
-.tpl-jake .cv-name { font-size: 2.2em; font-variant: small-caps; }
-.tpl-jake .cv-contact { font-size: .92em; }
+.tpl-jake .cv-name { font-variant: small-caps; }
 .tpl-jake .cv-headrule { display: none; }
-.tpl-jake .cv-sec { margin-top: 12px; }
 .tpl-jake .cv-sec h2 {
-  font-variant: small-caps; font-weight: 400; font-size: 1.2em;
-  border-bottom: 1px solid #000; padding-bottom: 2px; margin-bottom: 6px;
+  font-variant: small-caps; font-weight: 400;
+  border-bottom: 1px solid #000; padding-bottom: 2px;
 }
-.tpl-jake .entry { margin-bottom: 6px; }
-.tpl-jake .entry ul { margin-top: 1px; }
-.tpl-jake .entry ul li { margin: 0; }
 
 /* ============ Stockholm (Resume.io 실측: 2단 화이트, 차콜+파랑) ============ */
-.page.tpl-stockholm { font-family: "Segoe UI", Calibri, Arial, sans-serif; }
-.tpl-stockholm .cv-name { color: #2B2E33; font-size: 2.2em; font-weight: 700; }
-.tpl-stockholm .cv-title { font-size: .98em; color: var(--accent); font-weight: 600; }
-.tpl-stockholm .cv-contact { font-size: .85em; color: #666; }
+.page.tpl-stockholm { font-family: Calibri, "Segoe UI", Arial, sans-serif; }
+.tpl-stockholm .cv-name { color: #2B2E33; font-weight: 700; }
+.tpl-stockholm .cv-title { color: var(--accent); font-weight: 600; }
+.tpl-stockholm .cv-contact { color: #666; }
 .tpl-stockholm .cv-photo { width: 62px; height: 62px; object-fit: cover; border-radius: 8px; order: 0; }
 .tpl-stockholm .cv-headrule { display: none; }
 .tpl-stockholm .cols { grid-template-columns: 1fr 31%; column-gap: 36px; }
-.tpl-stockholm .cv-sec { margin-top: 16px; }
-.tpl-stockholm .cv-sec h2 { font-size: 1.05em; font-weight: 700; color: #2B2E33; margin-bottom: 6px; }
+.tpl-stockholm .cv-sec h2 { font-weight: 700; color: #2B2E33; }
 .tpl-stockholm .line .right { color: #999; }
-.tpl-stockholm .entry { margin-bottom: 10px; }
-.tpl-stockholm .col-side .cv-sec h2 { font-size: .98em; }
 
 /* ============ Cascade (Zety: 네이비 사이드바) ============ */
 .page.tpl-cascade { font-family: "Segoe UI", Calibri, sans-serif; padding: 0; }
@@ -471,36 +450,30 @@ input, select, textarea { font-family: inherit; font-size: 13px; color: #23272f;
 .tpl-cascade .col-main { padding: 42px 40px 42px 34px; }
 .tpl-cascade .col-side .cv-head { margin-bottom: 10px; }
 .tpl-cascade .col-side .cv-head-text { width: 100%; }
-.tpl-cascade .cv-name { color: #fff; font-size: 1.75em; line-height: 1.15; }
-.tpl-cascade .cv-title { color: rgba(255,255,255,.85); font-size: .95em; }
-.tpl-cascade .cv-contact { color: rgba(255,255,255,.85); font-size: .82em; }
+.tpl-cascade .cv-name { color: #fff; }
+.tpl-cascade .cv-title { color: rgba(255,255,255,.85); }
+.tpl-cascade .cv-contact { color: rgba(255,255,255,.85); }
 .tpl-cascade .cv-photo { width: 92px; height: 92px; object-fit: cover; border-radius: 6px; order: 0; }
 .tpl-cascade .cv-headrule { display: none; }
-.tpl-cascade .col-side .cv-sec { margin: 14px -24px 0; padding: 0 24px; }
+.tpl-cascade .col-side .cv-sec { margin-left: -24px; margin-right: -24px; padding: 0 24px; }
 .tpl-cascade .col-side .cv-sec h2 {
-  background: rgba(0,0,0,.25); color: #fff; font-size: .98em; font-weight: 700;
-  margin: 0 -24px 7px; padding: 4px 24px;
+  background: rgba(0,0,0,.25); color: #fff; font-weight: 700;
+  font-size: calc(var(--fs-base, 16px) + .67px);
+  margin-left: -24px; margin-right: -24px; padding: 4px 24px;
   -webkit-print-color-adjust: exact; print-color-adjust: exact;
 }
 .tpl-cascade .col-side b { color: #fff; }
 .tpl-cascade .col-side .line .right { color: rgba(255,255,255,.75); }
-.tpl-cascade .col-main .cv-sec { margin-top: 14px; }
 .tpl-cascade .col-main .cv-sec h2 {
-  color: var(--accent); font-size: 1.12em; font-weight: 700;
-  border-bottom: 1px solid #ddd; padding-bottom: 2px; margin-bottom: 6px;
+  color: var(--accent); font-weight: 700;
+  border-bottom: 1px solid #ddd; padding-bottom: 2px;
 }
 .tpl-cascade .line .right { color: #777; }
-.tpl-cascade .entry { margin-bottom: 8px; }
 
 /* ---------- 빈 미리보기 안내 ---------- */
 .empty-hint { text-align: center; color: #9aa3b2; padding-top: 320px; font-size: 15px; }
 
-/* ---------- 줄 간격(밀도) ---------- */
-.page.density-compact { line-height: 1.26; }
-.page.density-normal  { line-height: 1.42; }
-.page.density-relaxed { line-height: 1.58; }
-.page.density-compact .entry { margin-bottom: 6px; }
-.page.density-relaxed .entry { margin-bottom: 12px; }
+/* 줄 간격(밀도): 문단 사이 간격만 조절 (renderCv가 --sp* 변수에 반영, Word와 동일) */
 
 /* ---------- 페이지 경계 표시 ---------- */
 .page { position: relative; }

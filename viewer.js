@@ -67,6 +67,7 @@
     page.className = r.className;
     page.style.setProperty('--accent', r.accent);
     page.style.setProperty('--link', r.link);
+    Object.keys(r.vars || {}).forEach(function (k) { page.style.setProperty(k, r.vars[k]); });
     page.innerHTML = r.html;
     page._paper = r.paper;
     page._empty = r.empty;
@@ -121,7 +122,7 @@
   }
   function ensureDocx() {
     if (window.CVDocx) return Promise.resolve();
-    return loadScript('docx.iife.js').then(function () { return loadScript('docx-export.js?v=26'); });
+    return loadScript('docx.iife.js').then(function () { return loadScript('docx-export.js?v=27'); });
   }
 
   function setPrintPaper(settings) {

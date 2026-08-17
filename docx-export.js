@@ -120,13 +120,8 @@
     }
   };
 
-  // half-point 단위 (24 = 12pt). 기본(large)이 이력서 표준 12pt.
-  var SIZES = {
-    small:  { base: 21, title: 23, meta: 19 },   // 10.5pt
-    medium: { base: 22, title: 24, meta: 20 },   // 11pt
-    large:  { base: 24, title: 26, meta: 21 }    // 12pt
-  };
-  var DENSITY = { compact: 0.68, normal: 1, relaxed: 1.35 };
+  // 크기·간격 표는 cv-model(M.SIZES / M.spacingFor)이 단일 소스 — 미리보기와 동일 값
+  var SIZES = M.SIZES;
 
   function hex(accent, fallback) {
     var m = /^#?([0-9a-fA-F]{6})$/.exec(M.trim(accent || ''));
@@ -184,8 +179,6 @@
     var spec = M.TEMPLATE_SPECS[s.template];
     var cfg = DTPL[s.template];
     var sz = SIZES[s.fontSize] || SIZES.medium;
-    var m = DENSITY[s.density] || 1;
-    if (cfg.tightScale) m *= cfg.tightScale;
     var paper = PAPERS[spec.paper] || PAPERS.a4;
     // 여백 단일 소스: TEMPLATE_SPECS.marginMm (미리보기 padding·인쇄 @page와 동일 값)
     var MM2TW = 56.6929;
@@ -196,16 +189,19 @@
       paper: paper, margin: margin, marginTB: marginTB,
       contentW: paper.w - margin * 2,
       accent: hex(s.accent, hex(spec.accent)),
-      sp: {
-        line: Math.round(20 * m),
-        block: Math.round(110 * m),
-        tight: Math.round(40 * m),
-        headBefore: Math.round(220 * m),
-        headAfter: Math.round(90 * m),
-        cite: Math.round(80 * m)
-      },
+      sp: M.spacingFor(s),
       boldName: s.boldName
     };
+  }
+
+  // 내용 없는 스페이서·구분선 문단이 Word에서 한 줄 높이를 차지하지 않도록 헤어라인(1pt)으로
+  function thinPara(opts) {
+    opts = opts || {};
+    opts.children = opts.children || [];
+    opts.spacing = opts.spacing || {};
+    opts.spacing.line = 20;
+    opts.spacing.lineRule = docx.LineRuleType.EXACT;
+    return new Paragraph(opts);
   }
 
   /* ---------- 공통 조각 ---------- */
@@ -213,7 +209,8 @@
     opts = opts || {};
     var h = o.cfg.heading;
     var color = opts.color || h.color || (h.accent ? o.accent : '000000');
-    var size = opts.size || (o.sz.base + (h.dsize || 0));
+    var dsize = o.spec.headingDsize != null ? o.spec.headingDsize : (h.dsize || 0);
+    var size = opts.size || (o.sz.base + dsize);
     var text = h.caps ? String(title).toUpperCase() : String(title);
     var border;
     if (h.border === 'single') {
@@ -254,25 +251,30 @@
     runs = runs.concat(runsToDocx(o, block.cite));
     return new Paragraph({
       children: runs,
-      indent: o.cfg.citeHang ? { left: 360, hanging: 360 } : undefined,
+      indent: (o.spec.citeHang != null ? o.spec.citeHang : o.cfg.citeHang) ? { left: 360, hanging: 360 } : undefined,
+      keepLines: true,   // 서지 한 건이 페이지 경계에서 갈라지지 않도록 (미리보기와 동일)
       spacing: { after: o.sp.cite }
     });
   }
 
   function dividerParagraph(o, width) {
-    return new Paragraph({
+    return thinPara({
       spacing: { before: 20, after: Math.round(o.sp.block * 0.7) },
-      border: { bottom: { color: 'D1D1D1', space: 1, style: BorderStyle.DASHED, size: 5 } },
-      children: []
+      border: { bottom: { color: 'D1D1D1', space: 1, style: BorderStyle.DASHED, size: 5 } }
     });
   }
 
-  /* 일반 블록 → 문단 배열 */
+  /* 일반 블록 → 문단 배열
+   * keepLines/keepNext: 한 항목(제목 줄·상세 줄·불릿)이 페이지 경계에서 갈라지지 않도록
+   * — 미리보기 페이지 분할과 동일한 규칙.
+   */
   function blockParagraphs(o, block, opts) {
     opts = opts || {};
     var out = [];
     var lines = block.lines || [];
     var bullets = block.bullets || [];
+    var total = lines.length + bullets.length;
+    var idx = 0;
     var strippedOnce = false;
     lines.forEach(function (line, li) {
       var children = runsToDocx(o, line.left, { forceColor: opts.textColor });
@@ -294,18 +296,22 @@
         }));
       }
       var isLastLine = li === lines.length - 1 && !bullets.length;
+      idx++;
       out.push(new Paragraph({
         children: children,
         tabStops: hasRight ? [{ type: TabStopType.RIGHT, position: opts.tabPos || o.contentW }] : undefined,
+        keepLines: true, keepNext: idx < total,
         spacing: { after: isLastLine ? (opts.tight ? o.sp.tight : (opts.isLastBlock ? o.sp.tight : o.sp.block)) : o.sp.line }
       }));
     });
     bullets.forEach(function (b, ii) {
       var lastBullet = ii === bullets.length - 1;
+      idx++;
       out.push(new Paragraph({
         children: [new TextRun({ text: b, size: o.sz.base, color: opts.textColor })],
         // 기본 불릿(●)은 Word에서 지나치게 큼 → 표준 크기(•) 커스텀 넘버링 사용
         numbering: { reference: o.cfg.bulletDash ? 'cv-dash' : 'cv-bullet', level: 0 },
+        keepLines: true, keepNext: idx < total,
         spacing: { after: lastBullet ? (opts.isLastBlock ? o.sp.tight : o.sp.block) : o.sp.line }
       }));
     });
@@ -345,7 +351,7 @@
             children: runsToDocx(o, line.left),
             spacing: { after: li === b.lines.length - 1 ? o.sp.block : o.sp.line }
           });
-        }) : [new Paragraph({ children: [] })];
+        }) : [thinPara()];
         return new TableCell({
           width: { size: half, type: WidthType.DXA }, borders: NO_BORDERS,
           margins: { top: 0, bottom: 0, left: 0, right: 200 },
@@ -359,14 +365,14 @@
         width: { size: o.contentW, type: WidthType.DXA }, columnWidths: [half, half],
         borders: NO_BORDERS, layout: TableLayoutType.FIXED, rows: rows
       }),
-      new Paragraph({ children: [], spacing: { after: 0 } })
+      thinPara({ spacing: { after: 0 } })
     ];
   }
 
   /* ---------- 헤더 (이름/직함/연락처/사진) ---------- */
   function nameRunsDocx(o, fullName, forceColor) {
     var h = o.cfg.header;
-    var size = h.nameSize || 44;
+    var size = o.spec.nameHp || h.nameSize || 44;
     var name = M.trim(fullName);
     if (h.nameCaps) name = name.toUpperCase();
     if (h.nameTwoTone && !forceColor) {
@@ -511,7 +517,7 @@
         borders: NO_BORDERS, layout: TableLayoutType.FIXED,
         rows: [new TableRow({ children: cells })]
       }));
-      out.push(new Paragraph({ children: [], spacing: { after: Math.round(o.sp.block * 0.8) } }));
+      out.push(thinPara({ spacing: { after: Math.round(o.sp.block * 0.8) } }));
       return out;
     }
 
@@ -541,19 +547,18 @@
         borders: NO_BORDERS, layout: TableLayoutType.FIXED,
         rows: [new TableRow({ children: photoLeft ? [photoCell, textCell] : [textCell, photoCell] })]
       }));
-      out.push(new Paragraph({ children: [], spacing: { after: 20 } }));
+      out.push(thinPara({ spacing: { after: 20 } }));
     } else {
       out = out.concat(headerTextParagraphs(o, p, align)).concat(contactParagraphs(o, p, align));
     }
 
     if (h.rule) {
-      out.push(new Paragraph({
+      out.push(thinPara({
         spacing: { after: Math.round(o.sp.block * 0.9) },
-        border: { bottom: { color: h.rule.color || (h.rule.accent ? o.accent : '000000'), space: 2, style: BorderStyle.SINGLE, size: h.rule.size } },
-        children: []
+        border: { bottom: { color: h.rule.color || (h.rule.accent ? o.accent : '000000'), space: 2, style: BorderStyle.SINGLE, size: h.rule.size } }
       }));
     } else {
-      out.push(new Paragraph({ children: [], spacing: { after: Math.round(o.sp.tight) } }));
+      out.push(thinPara({ spacing: { after: Math.round(o.sp.tight) } }));
     }
     return out;
   }
@@ -595,7 +600,7 @@
           }),
           new TableCell({
             width: { size: gap, type: WidthType.DXA }, borders: NO_BORDERS,
-            children: [new Paragraph({ children: [] })]
+            children: [thinPara()]
           }),
           new TableCell({
             width: { size: ccw, type: WidthType.DXA }, borders: NO_BORDERS,
@@ -613,20 +618,20 @@
       // 섹션 제목 행: 힌트 열의 파란 바 + 제목 (moderncv 시그니처)
       rows.push(hintRow(
         [new Paragraph({
-          spacing: { before: first ? 60 : o.sp.headBefore, after: 0 },
+          spacing: { before: first ? 60 : o.sp.headBefore, after: 0, line: 20, lineRule: docx.LineRuleType.EXACT },
           border: { bottom: { color: o.accent, space: 1, style: BorderStyle.SINGLE, size: 36 } },
           children: []
         })],
         [new Paragraph({
           spacing: { before: first ? 0 : Math.round(o.sp.headBefore * 0.7), after: o.sp.headAfter },
-          children: [new TextRun({ text: vm.title, bold: false, size: o.sz.base + (o.cfg.heading.dsize || 7), color: o.accent })]
+          children: [new TextRun({ text: vm.title, bold: false, size: o.sz.base + (o.spec.headingDsize != null ? o.spec.headingDsize : 7), color: o.accent })]
         })]
       ));
       first = false;
 
       vm.groups.forEach(function (group) {
         if (group.label) {
-          rows.push(hintRow([new Paragraph({ children: [] })], [subheadingParagraph(o, group.label)]));
+          rows.push(hintRow([thinPara()], [subheadingParagraph(o, group.label)]));
         }
         group.items.forEach(function (block, bi) {
           var isLast = bi === group.items.length - 1;
@@ -662,7 +667,7 @@
         borders: NO_BORDERS, layout: TableLayoutType.FIXED,
         rows: rows
       }));
-      children.push(new Paragraph({ children: [], spacing: { after: Math.round(o.sp.tight * 0.5) } }));
+      children.push(thinPara({ spacing: { after: Math.round(o.sp.tight * 0.5) } }));
     });
     return children;
   }
@@ -782,7 +787,7 @@
     });
 
     if (!sideKids.length) return mainKids;
-    if (!mainKids.length) mainKids.push(new Paragraph({ children: [] }));
+    if (!mainKids.length) mainKids.push(thinPara());
 
     var sideFill = dark ? o.accent : o.cfg.sidebarFill;
     var sideCell = new TableCell({
@@ -792,7 +797,7 @@
       children: sideKids
     });
     var mainCell = new TableCell({ width: { size: mainW, type: WidthType.DXA }, borders: NO_BORDERS, children: mainKids });
-    var gapCell = new TableCell({ width: { size: gap, type: WidthType.DXA }, borders: NO_BORDERS, children: [new Paragraph({ children: [] })] });
+    var gapCell = new TableCell({ width: { size: gap, type: WidthType.DXA }, borders: NO_BORDERS, children: [thinPara()] });
 
     var cells = o.spec.sideLeft ? [sideCell, gapCell, mainCell] : [mainCell, gapCell, sideCell];
     var widths = o.spec.sideLeft ? [sideW, gap, mainW] : [mainW, gap, sideW];
@@ -826,7 +831,7 @@
               margins: { top: 0, bottom: 0, left: 0, right: 200 },
               children: [new Paragraph({
                 spacing: { before: 40 },
-                children: [new TextRun({ text: vm.title, bold: true, size: o.sz.base + (o.cfg.heading.dsize || 3), color: o.accent })]
+                children: [new TextRun({ text: vm.title, bold: true, size: o.sz.base + (o.spec.headingDsize != null ? o.spec.headingDsize : 3), color: o.accent })]
               })]
             }),
             new TableCell({
@@ -836,10 +841,9 @@
           ]
         })]
       }));
-      children.push(new Paragraph({
+      children.push(thinPara({
         spacing: { before: 60, after: Math.round(o.sp.block * 0.9) },
-        border: { top: { color: o.accent, space: 2, style: BorderStyle.SINGLE, size: 4 } },
-        children: []
+        border: { top: { color: o.accent, space: 2, style: BorderStyle.SINGLE, size: 4 } }
       }));
     });
     return children;

@@ -480,6 +480,7 @@
     page.className = r.className;
     page.style.setProperty('--accent', r.accent);
     page.style.setProperty('--link', r.link);
+    Object.keys(r.vars || {}).forEach(function (k) { page.style.setProperty(k, r.vars[k]); });
     page.innerHTML = r.empty
       ? '<div class="empty-hint">왼쪽에 내용을 입력하면 CV가 실시간으로 표시됩니다.<br>상단 [샘플 데이터]로 예시를 채워 볼 수 있습니다.</div>'
       : r.html;

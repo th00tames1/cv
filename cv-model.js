@@ -303,6 +303,7 @@
       label: 'Harvard Academic — 미국 대학 표준 학술 CV',
       desc: '하버드 GSAS 공식 가이드 실측 재현. Times New Roman, 검정 단색, 굵은 대문자 섹션. 미국 대학원생이 실제 제출하는 표준.',
       layout: 'single', entryStyle: 'org-first', paper: 'letter', marginMm: { tb: 19, lr: 19 },
+      nameHp: 32, headingDsize: 0, citeHang: false,
       accent: '#000000', swatches: ['#000000'],
       photo: false, nameStyle: 'caps', refsTwoCol: true
     },
@@ -310,6 +311,7 @@
       label: 'ModernCV — LaTeX 표준 (CTAN/Overleaf)',
       desc: '2006년부터 모든 TeX 배포판에 포함된 표준 LaTeX 이력서. 왼쪽 날짜 열과 파란 섹션 바.',
       layout: 'left-dates', entryStyle: 'inline', paper: 'a4', contactRight: true, marginMm: { tb: 24, lr: 24 },
+      nameHp: 54, headingDsize: 7, citeHang: true,
       photo: true, photoIn: 'head', photoShape: 'framed', photoSize: 96,
       accent: '#3873B3',
       swatches: ['#3873B3', '#F23333', '#F28C26', '#59B34D', '#980000', '#8054CC', '#0081A7', '#4D908E'],
@@ -318,7 +320,8 @@
     awesome: {
       label: 'Awesome CV — GitHub 28k★ 개발자 이력서',
       desc: 'posquit0의 Awesome-CV. 가는 이름과 굵은 성, 섹션 첫 세 글자 강조색. 개발자 이력서를 대표하는 양식.',
-      layout: 'single', entryStyle: 'awesome', paper: 'a4', headingFirst3: true, marginMm: { tb: 20, lr: 20 },
+      layout: 'single', entryStyle: 'awesome', paper: 'a4', headingFirst3: true, marginMm: { tb: 20, lr: 20 }, tightScale: 0.85,
+      nameHp: 58, headingDsize: 9, citeHang: true,
       accent: '#DC3522',
       swatches: ['#DC3522', '#00A388', '#0395DE', '#EF4089', '#FF6138', '#27AE60', '#95A5A6', '#131A28'],
       photo: true, photoIn: 'head', photoSide: 'left', photoSize: 92, nameStyle: 'first-light'
@@ -327,6 +330,7 @@
       label: 'AltaCV — Marissa Mayer 스타일 2단',
       desc: '마리사 메이어 이력서를 재현한 LaTeX 양식. 원형 사진, 오른쪽 사이드바, 점선 구분선.',
       layout: 'sidebar', entryStyle: 'altacv', paper: 'a4', marginMm: { tb: 15, lr: 12.5 },
+      nameHp: 48, headingDsize: 6, citeHang: true,
       accent: '#8F0D0D', swatches: ['#8F0D0D', '#450808', '#0000B3', '#2E6B47', '#584B8C'],
       photo: true, photoIn: 'head', photoShape: 'circle',
       side: ['skills', 'languages', 'certifications', 'memberships'],
@@ -337,20 +341,23 @@
       label: 'Europass — EU 공식 (2020+ 현행)',
       desc: 'EU 공식 CV 빌더의 현행 기본형(Formal). 회색 헤더 밴드, 대문자 섹션과 가는 밑줄. 수천만 건 작성된 공식 양식.',
       layout: 'single', entryStyle: 'europass', paper: 'a4', marginMm: { tb: 20, lr: 20 },
+      nameHp: 36, headingDsize: 1, citeHang: true,
       accent: '#004B80', swatches: ['#004B80', '#4D9ACB', '#0D5942', '#3B9E80', '#6C3088', '#C65094'],
       photo: true, photoIn: 'head', photoShape: 'circle', photoSize: 86, nameStyle: 'plain'
     },
     banking: {
       label: 'Banking / Consulting — 월가 표준 (WSO/M&I)',
       desc: '투자은행·컨설팅 이력서 표준. Times New Roman, 일반 굵기 이름, 이탤릭 직함, 대문자 섹션 + 밑줄.',
-      layout: 'single', entryStyle: 'org-first', entryTitleItalic: true, paper: 'letter', marginMm: { tb: 19, lr: 19 },
+      layout: 'single', entryStyle: 'org-first', entryTitleItalic: true, paper: 'letter', marginMm: { tb: 19, lr: 19 }, tightScale: 0.78,
+      nameHp: 38, headingDsize: 1, citeHang: false,
       accent: '#000000', swatches: ['#000000'],
       photo: false, nameStyle: 'plain'
     },
     jake: {
       label: "Jake's Resume — 개발자 이력서 표준",
       desc: 'Overleaf/GitHub 개발자 이력서 표준(jakegut/resume). 스몰캡스 섹션 + 얇은 밑줄, 촘촘한 불릿, 0.5인치 여백.',
-      layout: 'single', entryStyle: 'title-first', entryStyleEdu: 'org-first', paper: 'letter', marginMm: { tb: 13, lr: 13 },
+      layout: 'single', entryStyle: 'title-first', entryStyleEdu: 'org-first', paper: 'letter', marginMm: { tb: 13, lr: 13 }, tightScale: 0.85,
+      nameHp: 48, headingDsize: 3, citeHang: true,
       accent: '#000000', swatches: ['#000000'],
       photo: false, nameStyle: 'smallcaps'
     },
@@ -358,6 +365,7 @@
       label: 'Stockholm — Resume.io 1,700만+ 사용',
       desc: 'Resume.io(현 Essential)의 대표 템플릿. 2단 화이트, 차콜 제목, 파란 스킬 바.',
       layout: 'sidebar', entryStyle: 'stockholm', paper: 'a4', marginMm: { tb: 20, lr: 20 },
+      nameHp: 46, headingDsize: 3, citeHang: true,
       accent: '#3095D5', swatches: ['#3095D5', '#E44C4C', '#20C997', '#7950F2', '#F59F00', '#343A40'],
       side: ['skills', 'languages'], sideWidgets: { languages: 'bars' },
       photo: true, photoIn: 'head', photoSize: 62, nameStyle: 'plain'
@@ -365,7 +373,8 @@
     cascade: {
       label: 'Cascade — Zety 대표 (네이비 사이드바)',
       desc: 'Zety에서 150만+ 명이 사용한 템플릿. 네이비 사이드바에 인적사항·스킬, 흰 본문.',
-      layout: 'sidebar', sideLeft: true, headerIn: 'side', entryStyle: 'title-first', paper: 'a4', marginMm: { tb: 15, lr: 15 },
+      layout: 'sidebar', sideLeft: true, headerIn: 'side', entryStyle: 'title-first', paper: 'a4', marginMm: { tb: 15, lr: 15 }, tightScale: 0.9,
+      nameHp: 40, headingDsize: 4, citeHang: true,
       accent: '#1F4E79', swatches: ['#1F4E79', '#163A57', '#343A40', '#0F6674', '#7A263A', '#2E5E33'],
       side: ['skills', 'languages', 'certifications', 'memberships'],
       photo: true, photoIn: 'side', nameStyle: 'plain'
@@ -374,6 +383,7 @@
       label: 'Canva Style — 파스텔 사이드바',
       desc: 'Canva(월 2.6억 사용자) 이력서 템플릿의 대표적인 미학. 연회색 사이드바, 자간 넓은 대문자 이름, 얇은 구분선.',
       layout: 'sidebar', entryStyle: 'title-first', paper: 'a4', marginMm: { tb: 18, lr: 18 },
+      nameHp: 40, headingDsize: 2, citeHang: true,
       accent: '#4A6FA5', swatches: ['#4A6FA5', '#8A9BA8', '#C77E6F', '#6B8F71', '#9A7AA0', '#37474F'],
       side: ['skills', 'languages', 'certifications', 'memberships'],
       photo: true, photoIn: 'head', photoShape: 'circle',
@@ -386,6 +396,29 @@
     classic: 'harvard', academic: 'harvard', modern: 'awesome',
     minimal: 'stockholm', compact: 'banking'
   };
+
+  /* ---------- 간격 상수 (미리보기·Word 공용 단일 소스) ----------
+   * 값은 twip(1pt = 20twip). 미리보기는 px(= twip/15)로 환산해 CSS 변수로 사용.
+   * 줄 높이는 양쪽 모두 폰트 기본(single)을 사용 — 줄 간격 옵션은 문단 사이 간격만 조절.
+   */
+  var DENSITY = { compact: 0.68, normal: 1, relaxed: 1.35 };
+  var SP_BASE = { line: 20, block: 110, tight: 40, headBefore: 220, headAfter: 90, cite: 80 };
+
+  // 글자 크기 (half-point 단위, 24 = 12pt) — 미리보기(px 환산)와 Word가 동일 표 사용
+  var SIZES = {
+    small:  { base: 21, title: 23, meta: 19 },   // 10.5pt
+    medium: { base: 22, title: 24, meta: 20 },   // 11pt
+    large:  { base: 24, title: 26, meta: 21 }    // 12pt
+  };
+
+  function spacingFor(settings) {
+    var s = normalizeSettings(settings);
+    var spec = TEMPLATE_SPECS[s.template] || {};
+    var m = (DENSITY[s.density] || 1) * (spec.tightScale || 1);
+    var sp = {};
+    Object.keys(SP_BASE).forEach(function (k) { sp[k] = Math.round(SP_BASE[k] * m); });
+    return sp;
+  }
 
   function normalizeSettings(settings) {
     var s = settings || {};
@@ -1070,6 +1103,7 @@
     uid: uid, trim: trim, linesOf: linesOf,
     SECTION_DEFS: SECTION_DEFS, DEFAULT_ORDER: DEFAULT_ORDER, PERSONAL_FIELDS: PERSONAL_FIELDS,
     DEFAULT_SETTINGS: DEFAULT_SETTINGS, TEMPLATES: TEMPLATES,
+    SIZES: SIZES, DENSITY: DENSITY, spacingFor: spacingFor,
     TEMPLATE_SPECS: TEMPLATE_SPECS, TEMPLATE_MIGRATE: TEMPLATE_MIGRATE, normalizeSettings: normalizeSettings,
     newProfileData: newProfileData, newSection: newSection, emptyEntry: emptyEntry,
     migrateData: migrateData,

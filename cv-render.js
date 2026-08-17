@@ -170,13 +170,30 @@
     return esc(name);
   }
 
-  /* CV 전체 → { html, className, accent, paper } */
+  /* CV 전체 → { html, className, accent, paper, vars }
+   * vars: Word(docx)와 동일한 크기·간격을 CSS 변수로 — 페이지 경계가 Word와 일치하도록.
+   * (half-point → px: hp × 2/3 @96dpi, twip → px: tw ÷ 15)
+   */
   function renderCv(data, settings) {
     var s = M.normalizeSettings(settings);
     var spec = M.TEMPLATE_SPECS[s.template] || { layout: 'single' };
     var className = 'page tpl-' + s.template + ' layout-' + (spec.layout || 'single') +
-      ' paper-' + (spec.paper || 'a4') + ' size-' + s.fontSize + ' density-' + (s.density || 'normal');
+      ' paper-' + (spec.paper || 'a4') + ' size-' + s.fontSize + ' density-' + (s.density || 'normal') +
+      (spec.citeHang === false ? ' cites-flat' : '');
     var accent = s.accent || spec.accent || '#1f4e79';
+
+    var szT = (M.SIZES && M.SIZES[s.fontSize]) || { base: 22, title: 24, meta: 20 };
+    var sp = M.spacingFor ? M.spacingFor(s) : { line: 20, block: 110, tight: 40, headBefore: 220, headAfter: 90, cite: 80 };
+    function hpx(hp) { return Math.round(hp * 200 / 3) / 100 + 'px'; }   // half-point → px
+    function tpx(tw) { return Math.round(tw * 100 / 15) / 100 + 'px'; }  // twip → px
+    var vars = {
+      '--fs-base': hpx(szT.base), '--fs-title': hpx(szT.title), '--fs-meta': hpx(szT.meta),
+      '--fs-big': hpx(szT.base + 3),
+      '--fs-h2': hpx(szT.base + (spec.headingDsize || 0)),
+      '--fs-name': hpx(spec.nameHp || 44),
+      '--spl': tpx(sp.line), '--spb': tpx(sp.block), '--spt': tpx(sp.tight),
+      '--sphb': tpx(sp.headBefore), '--spha': tpx(sp.headAfter), '--spc': tpx(sp.cite)
+    };
 
     var p = data.personal || {};
     var html = '';
@@ -243,7 +260,7 @@
       html += mainParts.join('');
     }
 
-    return { html: html, className: className, accent: accent, link: linkColor(accent), paper: spec.paper || 'a4', empty: !hasHeader && !any };
+    return { html: html, className: className, accent: accent, link: linkColor(accent), paper: spec.paper || 'a4', empty: !hasHeader && !any, vars: vars };
   }
 
   /* ---------- 페이지 분할 (편집기 미리보기 · 공개 페이지 공용) ----------
