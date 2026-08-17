@@ -1,11 +1,11 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
   <title>Editor</title>
-  <link rel="stylesheet" href="styles.css?v=24">
+  <link rel="stylesheet" href="styles.css?v=25">
   <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'&gt;&lt;text y='.9em' font-size='90'&gt;📄&lt;/text&gt;&lt;/svg&gt;">
 </head>
 <body>
@@ -38,10 +38,10 @@
         <input type="color" id="ctl-accent" title="템플릿 강조 색상">
         <span id="swatches" title="템플릿 기본 색상 팔레트"></span>
         <label>글자 크기</label>
-        <select id="ctl-size">
-          <option value="small">작게</option>
-          <option value="medium">보통</option>
-          <option value="large">크게</option>
+        <select id="ctl-size" title="본문 글자 크기 (미리보기·인쇄·Word 동일)">
+          <option value="small">10.5pt</option>
+          <option value="medium">11pt</option>
+          <option value="large">12pt (기본)</option>
         </select>
         <label>줄 간격</label>
         <select id="ctl-density">
@@ -145,9 +145,9 @@
   </script>
 
   <script src="docx.iife.js"></script>
-  <script src="cv-model.js?v=24"></script>
-  <script src="cv-render.js?v=24"></script>
-  <script src="docx-export.js?v=24"></script>
-  <script src="app.js?v=24"></script>
+  <script src="cv-model.js?v=25"></script>
+  <script src="cv-render.js?v=25"></script>
+  <script src="docx-export.js?v=25"></script>
+  <script src="app.js?v=25"></script>
 </body>
 </html>

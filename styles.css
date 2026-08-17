@@ -168,7 +168,7 @@ input, select, textarea { font-family: inherit; font-size: 13px; color: #23272f;
 #page-wrap { margin: 0 auto; }
 .page {
   width: 794px; min-height: 1123px; background: #fff; margin: 0 auto;
-  box-shadow: 0 2px 14px rgba(20,30,50,.18); padding: 64px 60px;
+  box-shadow: 0 2px 14px rgba(20,30,50,.18); padding: 76px; /* 20mm — 인쇄·Word와 동일 */
   transform-origin: top left;
 }
 
@@ -263,9 +263,10 @@ input, select, textarea { font-family: inherit; font-size: 13px; color: #23272f;
 .ld-note { font-size: .82em; color: #5d5d5d; margin: -1px 0 3px; }
 
 /* 글자 크기 프리셋 */
-.page.size-small  { font-size: 12.6px; }
-.page.size-medium { font-size: 14px; }
-.page.size-large  { font-size: 14.7px; }
+/* 96dpi: 10.5pt=14px, 11pt=14.7px, 12pt=16px — Word 출력(SIZES)과 동일한 pt */
+.page.size-small  { font-size: 14px; }
+.page.size-medium { font-size: 14.7px; }
+.page.size-large  { font-size: 16px; }
 .page .cv-name    { font-size: 2.05em; }
 .page .cv-title   { font-size: 1.08em; }
 .page .cv-contact { font-size: 0.9em; }
@@ -290,7 +291,7 @@ input, select, textarea { font-family: inherit; font-size: 13px; color: #23272f;
 
 /* ============ ModernCV classic (v2.6.1 소스 검증) ============ */
 /* 이름 투톤(#B9B9B9/#737373) 일반 굵기, 연락처 오른쪽 상단, 파란 섹션 바+힌트 열 */
-.page.tpl-moderncv { font-family: "Segoe UI", Calibri, "Helvetica Neue", sans-serif; padding: 57px; }
+.page.tpl-moderncv { font-family: "Segoe UI", Calibri, "Helvetica Neue", sans-serif; padding: 91px; } /* 24mm */
 .tpl-moderncv .cv-head.head-split { align-items: flex-end; }
 .tpl-moderncv .cv-name { font-weight: 400; font-size: 2.55em; line-height: 1.05; }
 .tpl-moderncv .cv-name .nm-first { color: #B9B9B9; }
@@ -319,7 +320,7 @@ input, select, textarea { font-family: inherit; font-size: 13px; color: #23272f;
 
 /* ============ Awesome-CV (posquit0, 28k★) ============ */
 /* 가는 이름+굵은 성, 스몰캡스 직함(강조색), 섹션 첫 3글자 강조색 + 회색 선 */
-.page.tpl-awesome { font-family: "Segoe UI", Calibri, Roboto, sans-serif; padding: 43px 57px 57px; }
+.page.tpl-awesome { font-family: "Segoe UI", Calibri, Roboto, sans-serif; padding: 76px; } /* 20mm */
 .tpl-awesome .cv-head-text { width: 100%; text-align: center; }
 .tpl-awesome .cv-name { font-size: 2.9em; font-weight: 300; line-height: 1.1; }
 .tpl-awesome .cv-name .nm-first { color: #5D5D5D; font-weight: 300; }
@@ -365,9 +366,9 @@ input, select, textarea { font-family: inherit; font-size: 13px; color: #23272f;
 .tpl-altacv .entry .line:first-child { color: #2E2E2E; }
 
 /* ============ Europass 2020+ Formal (공식 스타일 실측) ============ */
-.page.tpl-europass { font-family: "Segoe UI", Arial, sans-serif; padding: 46px 57px 57px; }
+.page.tpl-europass { font-family: "Segoe UI", Arial, sans-serif; padding: 76px; } /* 20mm */
 .tpl-europass .cv-head {
-  background: #F5F5F5; margin: -46px -57px 0; padding: 34px 57px 18px;
+  background: #F5F5F5; margin: -76px -76px 0; padding: 44px 76px 20px;
   -webkit-print-color-adjust: exact; print-color-adjust: exact;
 }
 .tpl-europass .cv-name { color: #565656; font-size: 1.55em; font-weight: 800; }
@@ -391,7 +392,7 @@ input, select, textarea { font-family: inherit; font-size: 13px; color: #23272f;
 .tpl-europass .cv-sec .entry:not(.tight):last-child::after { display: none; }
 
 /* ============ Canva Style (파스텔 사이드바) ============ */
-.page.tpl-canva { font-family: "Segoe UI", Calibri, sans-serif; padding: 50px 53px; }
+.page.tpl-canva { font-family: "Segoe UI", Calibri, sans-serif; padding: 68px; } /* 18mm */
 .tpl-canva .cv-name {
   font-size: 1.9em; font-weight: 600; text-transform: uppercase; letter-spacing: .13em; color: #2B2F33;
 }
@@ -414,9 +415,9 @@ input, select, textarea { font-family: inherit; font-size: 13px; color: #23272f;
 .tpl-canva .entry { margin-bottom: 9px; }
 
 /* ============ Banking / Consulting (월가 표준) ============ */
-.page.tpl-banking { font-family: "Times New Roman", Times, serif; padding: 66px 72px; line-height: 1.28; }
+.page.tpl-banking { font-family: "Times New Roman", Times, serif; padding: 72px; line-height: 1.28; } /* 19mm */
 .tpl-banking .cv-head-text { width: 100%; text-align: center; }
-.tpl-banking .cv-name { font-size: 1.45em; text-transform: uppercase; letter-spacing: .02em; }
+.tpl-banking .cv-name { font-size: 1.58em; font-weight: 400; } /* Word와 동일: ~19pt 일반 굵기 */
 .tpl-banking .cv-title { font-size: 1em; }
 .tpl-banking .cv-headrule { border-top: 1.2px solid #000; margin-top: 5px; }
 .tpl-banking .cv-sec { margin-top: 10px; }
@@ -424,12 +425,14 @@ input, select, textarea { font-family: inherit; font-size: 13px; color: #23272f;
   font-size: 1.02em; font-weight: 700; text-transform: uppercase;
   border-bottom: 1px solid #000; padding-bottom: 1px; margin-bottom: 4px;
 }
-.tpl-banking .entry { margin-bottom: 5px; }
+.tpl-banking .entry { margin-bottom: 6px; }
+/* 원본(WSO·Harvard 가이드)은 날짜·지역도 순수 검정 */
+.tpl-banking .line .right, .tpl-harvard .line .right { color: #1a1a1a; }
 .tpl-banking .entry.tight { margin-bottom: 1px; }
 .tpl-banking .entry ul { margin-top: 1px; }
 
 /* ============ Jake's Resume (jakegut/resume 실측) ============ */
-.page.tpl-jake { font-family: Cambria, Georgia, "Times New Roman", serif; padding: 48px; line-height: 1.32; }
+.page.tpl-jake { font-family: Cambria, Georgia, "Times New Roman", serif; padding: 49px; line-height: 1.32; } /* 13mm */
 .tpl-jake .cv-head-text { width: 100%; text-align: center; }
 .tpl-jake .cv-name { font-size: 2.2em; font-variant: small-caps; }
 .tpl-jake .cv-contact { font-size: .92em; }

@@ -1,4 +1,4 @@
-/* =========================================================================
+﻿/* =========================================================================
  * viewer.js — 공개 CV 페이지: cv-publish.json을 읽어 렌더링
  * ========================================================================= */
 (function () {
@@ -121,14 +121,15 @@
   }
   function ensureDocx() {
     if (window.CVDocx) return Promise.resolve();
-    return loadScript('docx.iife.js').then(function () { return loadScript('docx-export.js?v=24'); });
+    return loadScript('docx.iife.js').then(function () { return loadScript('docx-export.js?v=25'); });
   }
 
   function setPrintPaper(settings) {
     var spec = M.TEMPLATE_SPECS[settings.template] || {};
     var st = document.getElementById('print-page-style');
     if (!st) { st = document.createElement('style'); st.id = 'print-page-style'; document.head.appendChild(st); }
-    st.textContent = '@media print { @page { size: ' + (spec.paper === 'letter' ? 'Letter' : 'A4') + '; margin: 18mm 17mm; } }';
+    var pm = spec.marginMm || { tb: 18, lr: 17 };
+    st.textContent = '@media print { @page { size: ' + (spec.paper === 'letter' ? 'Letter' : 'A4') + '; margin: ' + pm.tb + 'mm ' + pm.lr + 'mm; } }';
   }
 
   function bind() {

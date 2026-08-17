@@ -38,7 +38,7 @@
       font: 'Times New Roman', margin: 1080,
       header: { align: 'center', nameCaps: true, nameBold: true, nameSize: 32, titleItalic: false, rule: null },
       heading: { caps: true, bold: true, align: 'center', dsize: 0, accent: false, border: 'none' },
-      date: { italic: false, accent: false },
+      date: { italic: false, accent: false, color: '1A1A1A' },
       bulletDash: true, citeHang: false, pageHeader: true
     },
     // moderncv classic (v2.6.1 소스): 이름 34pt 일반 굵기 투톤(#B9B9B9/#737373), 연락처 오른쪽 상단,
@@ -83,8 +83,8 @@
       font: 'Times New Roman', margin: 1080,
       header: { align: 'center', nameBold: false, nameSize: 38, rule: null },
       heading: { caps: true, bold: true, dsize: 1, accent: false, border: 'single', borderSize: 6, borderColor: '000000' },
-      date: { italic: false, accent: false },
-      tightScale: 0.7, citeHang: false
+      date: { italic: false, accent: false, color: '1A1A1A' },
+      tightScale: 0.78, citeHang: false
     },
     // Jake's Resume (jakegut/resume 실측): 0.5in 여백, 스몰캡스 굵은 이름, 스몰캡스 섹션 + 얇은 선
     jake: {
@@ -120,11 +120,11 @@
     }
   };
 
-  // half-point 단위 (20 = 10pt)
+  // half-point 단위 (24 = 12pt). 기본(large)이 이력서 표준 12pt.
   var SIZES = {
-    small:  { base: 19, title: 21, meta: 17 },
-    medium: { base: 21, title: 23, meta: 19 },
-    large:  { base: 22, title: 24, meta: 20 }
+    small:  { base: 21, title: 23, meta: 19 },   // 10.5pt
+    medium: { base: 22, title: 24, meta: 20 },   // 11pt
+    large:  { base: 24, title: 26, meta: 21 }    // 12pt
   };
   var DENSITY = { compact: 0.68, normal: 1, relaxed: 1.35 };
 
@@ -187,10 +187,13 @@
     var m = DENSITY[s.density] || 1;
     if (cfg.tightScale) m *= cfg.tightScale;
     var paper = PAPERS[spec.paper] || PAPERS.a4;
-    var margin = cfg.margin || 1134;
+    // 여백 단일 소스: TEMPLATE_SPECS.marginMm (미리보기 padding·인쇄 @page와 동일 값)
+    var MM2TW = 56.6929;
+    var margin = spec.marginMm ? Math.round(spec.marginMm.lr * MM2TW) : (cfg.margin || 1134);
+    var marginTB = spec.marginMm ? Math.round(spec.marginMm.tb * MM2TW) : (cfg.marginTB || margin);
     return {
       s: s, spec: spec, cfg: cfg, sz: sz,
-      paper: paper, margin: margin, marginTB: cfg.marginTB || margin,
+      paper: paper, margin: margin, marginTB: marginTB,
       contentW: paper.w - margin * 2,
       accent: hex(s.accent, hex(spec.accent)),
       sp: {
@@ -232,6 +235,7 @@
       alignment: h.align === 'center' ? AlignmentType.CENTER : AlignmentType.LEFT,
       spacing: { before: opts.first ? Math.round(o.sp.headBefore * 0.4) : o.sp.headBefore, after: o.sp.headAfter },
       border: border,
+      keepNext: true,   // 섹션 제목이 페이지 맨 아래에 홀로 남지 않도록
       children: children
     });
   }
@@ -239,6 +243,7 @@
   function subheadingParagraph(o, label) {
     return new Paragraph({
       spacing: { before: Math.round(o.sp.tight * 2), after: Math.round(o.sp.tight) },
+      keepNext: true,
       children: [new TextRun({ text: label, bold: true, italics: true, size: o.sz.base, color: '333333' })]
     });
   }
@@ -275,7 +280,13 @@
       if (hasRight && opts.stripFirstRight && !strippedOnce) { hasRight = false; strippedOnce = true; }
       if (hasRight) {
         children.push(new TextRun({ children: [new Tab()] }));
-        children = children.concat(runsToDocx(o, line.right, {
+        // 날짜·지역이 "2026 – / Present"처럼 중간에서 갈라지지 않도록 NBSP로 묶는다
+        var rightRuns = line.right.map(function (r) {
+          var c = {}; for (var k in r) c[k] = r[k];
+          c.t = String(c.t).replace(/ /g, ' ');
+          return c;
+        });
+        children = children.concat(runsToDocx(o, rightRuns, {
           size: o.sz.meta,
           color: opts.textColor ? 'D3DEE9' : (o.cfg.date.color || (o.cfg.date.accent ? o.accent : '555555')),
           forceColor: opts.textColor ? 'D3DEE9' : undefined,

@@ -940,7 +940,8 @@
     var spec = M.TEMPLATE_SPECS[M.normalizeSettings(settings).template] || {};
     var st = document.getElementById('print-page-style');
     if (!st) { st = document.createElement('style'); st.id = 'print-page-style'; document.head.appendChild(st); }
-    st.textContent = '@media print { @page { size: ' + (spec.paper === 'letter' ? 'Letter' : 'A4') + '; margin: 18mm 17mm; } }';
+    var pm = spec.marginMm || { tb: 18, lr: 17 };
+    st.textContent = '@media print { @page { size: ' + (spec.paper === 'letter' ? 'Letter' : 'A4') + '; margin: ' + pm.tb + 'mm ' + pm.lr + 'mm; } }';
   }
 
   function downloadBlob(blob, filename) {
