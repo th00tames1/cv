@@ -389,6 +389,42 @@
     return out;
   }
 
+  /* Word용 아이콘 래스터라이즈: 미리보기와 같은 SVG를 PNG(Uint8Array)로 → { name: {data,w,h} }
+   * color: 아이콘 색(#rrggbb). 링크 아이콘은 링크색, 일반은 본문색.
+   */
+  function rasterIcons(colorLink, colorText) {
+    var names = Object.keys(ICON_PATHS);
+    var SIZE = 64;
+    function one(name, color) {
+      return new Promise(function (resolve) {
+        var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="' + SIZE + '" height="' + SIZE + '" style="color:' + color + '">' + ICON_PATHS[name] + '</svg>';
+        var img = new Image();
+        var url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }));
+        img.onload = function () {
+          try {
+            var cv = document.createElement('canvas'); cv.width = SIZE; cv.height = SIZE;
+            cv.getContext('2d').drawImage(img, 0, 0, SIZE, SIZE);
+            cv.toBlob(function (b) {
+              if (!b) { resolve(null); return; }
+              b.arrayBuffer().then(function (ab) { resolve({ data: new Uint8Array(ab), w: SIZE, h: SIZE }); });
+            }, 'image/png');
+          } catch (e) { resolve(null); }
+          URL.revokeObjectURL(url);
+        };
+        img.onerror = function () { URL.revokeObjectURL(url); resolve(null); };
+        img.src = url;
+      });
+    }
+    var linkIcons = ['mail', 'phone', 'globe', 'linkedin', 'github', 'scholar', 'orcid'];
+    return Promise.all(names.map(function (n) {
+      return one(n, linkIcons.indexOf(n) >= 0 ? colorLink : colorText).then(function (r) { return [n, r]; });
+    })).then(function (pairs) {
+      var out = {};
+      pairs.forEach(function (pr) { if (pr[1]) out[pr[0]] = pr[1]; });
+      return out;
+    });
+  }
+
   // 원형 크롭 (Word 내보내기용, AltaCV 등)
   function circledPhoto(dataUrl) {
     return new Promise(function (resolve) {
@@ -411,6 +447,7 @@
 
   return {
     PAPER_PX: PAPER_PX, esc: esc, runsToHtml: runsToHtml, renderCv: renderCv,
-    layoutPages: layoutPages, pageBreaks: pageBreaks, circledPhoto: circledPhoto
+    layoutPages: layoutPages, pageBreaks: pageBreaks, circledPhoto: circledPhoto,
+    rasterIcons: rasterIcons, linkColor: linkColor
   };
 });

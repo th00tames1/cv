@@ -230,7 +230,8 @@
     }
     return new Paragraph({
       alignment: h.align === 'center' ? AlignmentType.CENTER : AlignmentType.LEFT,
-      spacing: { before: (opts.first || opts.pageBreakBefore) ? Math.round(o.sp.headBefore * 0.4) : o.sp.headBefore, after: o.sp.headAfter },
+      // 첫 섹션(헤더 직후)은 본문 한 줄 높이의 여백 — 미리보기 CSS(.cv-head + .cv-sec)와 동일
+      spacing: { before: opts.first ? Math.round(o.sz.base * 10 * 1.15) : (opts.pageBreakBefore ? 0 : o.sp.headBefore), after: o.sp.headAfter },
       border: border,
       keepNext: true,   // 섹션 제목이 페이지 맨 아래에 홀로 남지 않도록
       pageBreakBefore: !!opts.pageBreakBefore,
@@ -433,10 +434,21 @@
   }
 
   // 연락처 항목 → Word 런. href가 있으면 하이퍼링크로 걸고, 링크는 색+밑줄로 구분되게 한다.
+  // 연락처 아이콘(미리보기 SVG를 PNG로 래스터라이즈한 것) — buildDoc opts.icons: { name: {data:Uint8Array, w, h} }
+  var ICONS = null;
+  function iconRun(name, sizeHp) {
+    if (!ICONS || !ICONS[name] || !ImageRun) return null;
+    var ic = ICONS[name];
+    var px = Math.round(sizeHp / 2 * 96 / 72 * 0.95); // 글자 크기(pt)에 맞춘 px
+    return new ImageRun({ type: 'png', data: ic.data, transformation: { width: px, height: px } });
+  }
+
   function contactRuns(items, sep, style, linkColor) {
     var out = [];
     items.forEach(function (it, i) {
       if (i && sep) out.push(new TextRun({ text: sep, size: style.size, color: style.color, italics: style.italics }));
+      var ir = it.icon ? iconRun(it.icon, style.size) : null;
+      if (ir) { out.push(ir); out.push(new TextRun({ text: ' ', size: style.size })); }
       if (it.href && ExternalHyperlink) {
         out.push(new ExternalHyperlink({
           link: it.href,
@@ -874,6 +886,7 @@
   function buildDoc(data, settings, opts) {
     var o = makeCtx(data, settings);
     o.breaks = (opts && opts.breaks && opts.breaks.length) ? new Set(opts.breaks) : null;
+    ICONS = (opts && opts.icons) || null;
     var p = data.personal || {};
     // Cascade처럼 헤더가 사이드바 안에 들어가는 템플릿은 상단 헤더 생략
     var children = o.spec.headerIn === 'side' ? [] : headerChildren(o, p);

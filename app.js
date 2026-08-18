@@ -727,10 +727,14 @@
           return pr.data;
         })
         .then(function (data) {
-          // 미리보기가 나눈 페이지 위치를 그대로 Word에 적용 (미리보기 = 인쇄 = Word)
-          var breaks = window.CVRender.pageBreaks(el('cv-page'));
-          var doc = window.CVDocx.buildDoc(data, pr.settings, { breaks: breaks });
-          return window.CVDocx.Packer.toBlob(doc);
+          // 미리보기가 나눈 페이지 위치 + 미리보기와 같은 연락처 아이콘을 Word에 적용
+          var page = el('cv-page');
+          var breaks = window.CVRender.pageBreaks(page);
+          var linkCol = getComputedStyle(page).getPropertyValue('--link').trim() || '#0f4c81';
+          return window.CVRender.rasterIcons(linkCol, '#444444').then(function (icons) {
+            var doc = window.CVDocx.buildDoc(data, pr.settings, { breaks: breaks, icons: icons });
+            return window.CVDocx.Packer.toBlob(doc);
+          });
         })
         .then(function (blob) {
           downloadBlob(blob, window.CVDocx.suggestedFilename(pr.data, pr.name));
@@ -943,8 +947,10 @@
     var spec = M.TEMPLATE_SPECS[M.normalizeSettings(settings).template] || {};
     var st = document.getElementById('print-page-style');
     if (!st) { st = document.createElement('style'); st.id = 'print-page-style'; document.head.appendChild(st); }
-    var pm = spec.marginMm || { tb: 18, lr: 17 };
-    st.textContent = '@media print { @page { size: ' + (spec.paper === 'letter' ? 'Letter' : 'A4') + '; margin: ' + pm.tb + 'mm ' + pm.lr + 'mm; } }';
+    // 여백은 .page padding(미리보기와 동일)으로 인쇄하므로 @page 여백은 0 (인쇄 대화상자 설정 무관)
+    st.textContent = '@media print { @page { size: ' + (spec.paper === 'letter' ? 'Letter' : 'A4') + '; margin: 0; } }';
+    var page = el('cv-page');
+    if (page) page.style.setProperty('--page-pad-top', getComputedStyle(page).paddingTop);
   }
 
   function downloadBlob(blob, filename) {

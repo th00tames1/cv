@@ -122,15 +122,17 @@
   }
   function ensureDocx() {
     if (window.CVDocx) return Promise.resolve();
-    return loadScript('docx.iife.js').then(function () { return loadScript('docx-export.js?v=29'); });
+    return loadScript('docx.iife.js').then(function () { return loadScript('docx-export.js?v=30'); });
   }
 
   function setPrintPaper(settings) {
     var spec = M.TEMPLATE_SPECS[settings.template] || {};
     var st = document.getElementById('print-page-style');
     if (!st) { st = document.createElement('style'); st.id = 'print-page-style'; document.head.appendChild(st); }
-    var pm = spec.marginMm || { tb: 18, lr: 17 };
-    st.textContent = '@media print { @page { size: ' + (spec.paper === 'letter' ? 'Letter' : 'A4') + '; margin: ' + pm.tb + 'mm ' + pm.lr + 'mm; } }';
+    // 여백은 .page padding(미리보기와 동일)으로 인쇄하므로 @page 여백은 0 (인쇄 대화상자 설정 무관)
+    st.textContent = '@media print { @page { size: ' + (spec.paper === 'letter' ? 'Letter' : 'A4') + '; margin: 0; } }';
+    var page = el('cv-page');
+    if (page) page.style.setProperty('--page-pad-top', getComputedStyle(page).paddingTop);
   }
 
   function bind() {
@@ -157,9 +159,13 @@
           return current.data;
         })
         .then(function (data) {
-          var breaks = R.pageBreaks(el('cv-page'));
-          var doc = window.CVDocx.buildDoc(data, current.settings, { breaks: breaks });
-          return window.CVDocx.Packer.toBlob(doc);
+          var page = el('cv-page');
+          var breaks = R.pageBreaks(page);
+          var linkCol = getComputedStyle(page).getPropertyValue('--link').trim() || '#0f4c81';
+          return R.rasterIcons(linkCol, '#444444').then(function (icons) {
+            var doc = window.CVDocx.buildDoc(data, current.settings, { breaks: breaks, icons: icons });
+            return window.CVDocx.Packer.toBlob(doc);
+          });
         })
         .then(function (blob) {
           var url = URL.createObjectURL(blob);
