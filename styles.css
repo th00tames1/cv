@@ -496,7 +496,9 @@ input, select, textarea { font-family: inherit; font-size: 13px; color: #23272f;
   background: #fff; border: 1px solid #d6dbe3; border-radius: 999px;
   padding: 1px 10px; white-space: nowrap;
 }
-@media print { .pg-spacer { display: none !important; } }
+/* (인쇄 시 .pg-spacer 처리는 아래 인쇄 블록에서 강제 페이지 나눔으로 사용) */
+/* 새 페이지 맨 위 요소는 위쪽 간격을 갖지 않는다 (인쇄·Word와 동일) */
+.pg-spacer + .cv-sec, .pg-spacer + .entry, .pg-spacer + .cite { margin-top: 0; }
 
 /* ---------- 사진 업로드 UI ---------- */
 .photo-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
@@ -680,4 +682,10 @@ body.viewer { background: #eef0f3; min-height: 100vh; }
   .tpl-europass .cv-head { margin: 0 !important; }
   /* 항목이 페이지 경계에서 어중간하게 잘리지 않도록 */
   .entry, .cite, .cv-sec h2 { break-inside: avoid; page-break-inside: avoid; }
+  /* 미리보기 분할기가 정한 지점에서 강제 페이지 나눔 → 인쇄 = 미리보기 (pg-spacer 자체는 숨김) */
+  .pg-spacer { display: block !important; height: 0 !important; margin: 0 !important; padding: 0 !important;
+               background: none !important; break-after: page; page-break-after: always; }
+  .pg-spacer .pg-gaplabel { display: none !important; }
+  /* 강제 나눔 뒤 첫 요소의 상단 여백은 페이지 위 여백으로 대체 */
+  .pg-spacer + .cv-sec, .pg-spacer + .entry, .pg-spacer + .cite { margin-top: 0 !important; }
 }

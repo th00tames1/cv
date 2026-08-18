@@ -122,7 +122,7 @@
   }
   function ensureDocx() {
     if (window.CVDocx) return Promise.resolve();
-    return loadScript('docx.iife.js').then(function () { return loadScript('docx-export.js?v=27'); });
+    return loadScript('docx.iife.js').then(function () { return loadScript('docx-export.js?v=28'); });
   }
 
   function setPrintPaper(settings) {
@@ -157,7 +157,8 @@
           return current.data;
         })
         .then(function (data) {
-          var doc = window.CVDocx.buildDoc(data, current.settings);
+          var breaks = R.pageBreaks(el('cv-page'));
+          var doc = window.CVDocx.buildDoc(data, current.settings, { breaks: breaks });
           return window.CVDocx.Packer.toBlob(doc);
         })
         .then(function (blob) {

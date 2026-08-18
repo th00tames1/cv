@@ -230,9 +230,10 @@
     }
     return new Paragraph({
       alignment: h.align === 'center' ? AlignmentType.CENTER : AlignmentType.LEFT,
-      spacing: { before: opts.first ? Math.round(o.sp.headBefore * 0.4) : o.sp.headBefore, after: o.sp.headAfter },
+      spacing: { before: (opts.first || opts.pageBreakBefore) ? Math.round(o.sp.headBefore * 0.4) : o.sp.headBefore, after: o.sp.headAfter },
       border: border,
       keepNext: true,   // 섹션 제목이 페이지 맨 아래에 홀로 남지 않도록
+      pageBreakBefore: !!opts.pageBreakBefore,
       children: children
     });
   }
@@ -245,7 +246,7 @@
     });
   }
 
-  function citeParagraph(o, block, numbered, num) {
+  function citeParagraph(o, block, numbered, num, pageBreakBefore) {
     var runs = [];
     if (numbered) runs.push(new TextRun({ text: '[' + num + '] ', size: o.sz.base }));
     runs = runs.concat(runsToDocx(o, block.cite));
@@ -253,6 +254,7 @@
       children: runs,
       indent: (o.spec.citeHang != null ? o.spec.citeHang : o.cfg.citeHang) ? { left: 360, hanging: 360 } : undefined,
       keepLines: true,   // 서지 한 건이 페이지 경계에서 갈라지지 않도록 (미리보기와 동일)
+      pageBreakBefore: !!pageBreakBefore,
       spacing: { after: o.sp.cite }
     });
   }
@@ -301,6 +303,7 @@
         children: children,
         tabStops: hasRight ? [{ type: TabStopType.RIGHT, position: opts.tabPos || o.contentW }] : undefined,
         keepLines: true, keepNext: idx < total,
+        pageBreakBefore: !!(opts.pageBreakBefore && idx === 1),
         spacing: { after: isLastLine ? (opts.tight ? o.sp.tight : (opts.isLastBlock ? o.sp.tight : o.sp.block)) : o.sp.line }
       }));
     });
@@ -312,24 +315,34 @@
         // 기본 불릿(●)은 Word에서 지나치게 큼 → 표준 크기(•) 커스텀 넘버링 사용
         numbering: { reference: o.cfg.bulletDash ? 'cv-dash' : 'cv-bullet', level: 0 },
         keepLines: true, keepNext: idx < total,
+        pageBreakBefore: !!(opts.pageBreakBefore && idx === 1),
         spacing: { after: lastBullet ? (opts.isLastBlock ? o.sp.tight : o.sp.block) : o.sp.line }
       }));
     });
     return out;
   }
 
-  /* 섹션 내용(그룹+블록) → 문단 배열 (single 계열) */
+  /* 섹션 내용(그룹+블록) → 문단 배열 (single 계열)
+   * opts.breaks: 미리보기 분할기가 정한 나눔 위치 집합 — "섹션인덱스:항목순번" (0 = 섹션 제목 앞)
+   * 해당 항목의 첫 문단에 pageBreakBefore를 걸어 Word가 미리보기와 같은 곳에서 나뉘게 한다.
+   */
   function sectionBodyParagraphs(o, vm, opts) {
     opts = opts || {};
     var out = [];
     var useDividers = o.cfg.dividers && !vm.tight && !opts.noDividers;
+    var flat = 0; // 섹션 내 항목 순번 (미리보기 DOM의 .entry/.cite 순서와 동일)
     vm.groups.forEach(function (group) {
       if (group.label) out.push(subheadingParagraph(o, group.label));
       group.items.forEach(function (block, bi) {
+        flat++;
         var isLast = bi === group.items.length - 1;
-        if (block.cite) { out.push(citeParagraph(o, block, group.numbered, bi + 1)); return; }
+        var brk = !!(opts.breaks && opts.breaks.has(opts.secIdx + ':' + flat));
+        if (block.cite) {
+          out.push(citeParagraph(o, block, group.numbered, bi + 1, brk));
+          return;
+        }
         out = out.concat(blockParagraphs(o, block, {
-          tabPos: opts.tabPos, tight: vm.tight, isLastBlock: isLast, textColor: opts.textColor
+          tabPos: opts.tabPos, tight: vm.tight, isLastBlock: isLast, textColor: opts.textColor, pageBreakBefore: brk
         }));
         if (useDividers && !isLast) out.push(dividerParagraph(o));
       });
@@ -569,15 +582,18 @@
   function engineSingle(o, data) {
     var children = [];
     var first = true;
+    var secIdx = -1; // 렌더된(비어있지 않은) 섹션 순번 — 미리보기 DOM의 .cv-sec 순서와 동일
     (data.sections || []).forEach(function (section) {
       var vm = M.sectionContent(section, o.s);
       if (!vm) return;
-      children.push(headingParagraph(o, vm.title, { first: first }));
+      secIdx++;
+      var brkHead = !!(o.breaks && o.breaks.has(secIdx + ':0'));
+      children.push(headingParagraph(o, vm.title, { first: first, pageBreakBefore: brkHead }));
       first = false;
       if (o.spec.refsTwoCol && vm.type === 'references') {
         children = children.concat(referencesTwoColumn(o, vm));
       } else {
-        children = children.concat(sectionBodyParagraphs(o, vm, { tabPos: o.contentW }));
+        children = children.concat(sectionBodyParagraphs(o, vm, { tabPos: o.contentW, breaks: o.breaks, secIdx: secIdx }));
       }
     });
     return children;
@@ -850,8 +866,14 @@
   }
 
   /* ---------- 문서 조립 ---------- */
-  function buildDoc(data, settings) {
+  /* buildDoc(data, settings, opts)
+   * opts.breaks: 미리보기 분할기가 정한 페이지 나눔 위치 배열 ["secIdx:entryOrd", ...]
+   *   (secIdx = 렌더된 섹션 순번, entryOrd = 0이면 섹션 제목 앞, n이면 n번째 항목 앞)
+   *   → Word가 미리보기·인쇄와 정확히 같은 지점에서 페이지를 나눈다.
+   */
+  function buildDoc(data, settings, opts) {
     var o = makeCtx(data, settings);
+    o.breaks = (opts && opts.breaks && opts.breaks.length) ? new Set(opts.breaks) : null;
     var p = data.personal || {};
     // Cascade처럼 헤더가 사이드바 안에 들어가는 템플릿은 상단 헤더 생략
     var children = o.spec.headerIn === 'side' ? [] : headerChildren(o, p);

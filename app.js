@@ -727,7 +727,9 @@
           return pr.data;
         })
         .then(function (data) {
-          var doc = window.CVDocx.buildDoc(data, pr.settings);
+          // 미리보기가 나눈 페이지 위치를 그대로 Word에 적용 (미리보기 = 인쇄 = Word)
+          var breaks = window.CVRender.pageBreaks(el('cv-page'));
+          var doc = window.CVDocx.buildDoc(data, pr.settings, { breaks: breaks });
           return window.CVDocx.Packer.toBlob(doc);
         })
         .then(function (blob) {

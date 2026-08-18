@@ -364,6 +364,31 @@
     else paginate(page, PAPER_PX[paperKey || 'a4'] || PAPER_PX.a4);
   }
 
+  /* 미리보기 분할 결과 → Word용 나눔 위치 목록 ["secIdx:entryOrd", ...]
+   * pg-spacer 바로 다음 요소가 섹션이면 "secIdx:0", 섹션 안 항목이면 "secIdx:n"(1부터).
+   */
+  function pageBreaks(page) {
+    var out = [];
+    if (!page) return out;
+    var secs = Array.prototype.filter.call(page.children, function (c) { return c.classList && c.classList.contains('cv-sec'); });
+    Array.prototype.forEach.call(page.querySelectorAll('.pg-spacer'), function (sp) {
+      var nxt = sp.nextElementSibling;
+      if (!nxt) return;
+      if (nxt.classList.contains('cv-sec')) {
+        out.push(secs.indexOf(nxt) + ':0');
+        return;
+      }
+      var sec = nxt.closest ? nxt.closest('.cv-sec') : null;
+      if (!sec) return;
+      var items = Array.prototype.filter.call(sec.children, function (gc) {
+        return gc.tagName !== 'H2' && !(gc.classList && (gc.classList.contains('pg-spacer') || gc.classList.contains('cv-sub')));
+      });
+      var ord = items.indexOf(nxt);
+      if (ord >= 0) out.push(secs.indexOf(sec) + ':' + (ord + 1));
+    });
+    return out;
+  }
+
   // 원형 크롭 (Word 내보내기용, AltaCV 등)
   function circledPhoto(dataUrl) {
     return new Promise(function (resolve) {
@@ -386,6 +411,6 @@
 
   return {
     PAPER_PX: PAPER_PX, esc: esc, runsToHtml: runsToHtml, renderCv: renderCv,
-    layoutPages: layoutPages, circledPhoto: circledPhoto
+    layoutPages: layoutPages, pageBreaks: pageBreaks, circledPhoto: circledPhoto
   };
 });
