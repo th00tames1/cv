@@ -688,4 +688,7 @@ body.viewer { background: #eef0f3; min-height: 100vh; }
   .pg-spacer .pg-gaplabel { display: none !important; }
   /* 강제 나눔 뒤 첫 요소의 상단 여백은 페이지 위 여백으로 대체 */
   .pg-spacer + .cv-sec, .pg-spacer + .entry, .pg-spacer + .cite { margin-top: 0 !important; }
+  /* 강제 나눔 직전 요소의 하단 여백이 페이지를 넘겨 빈 페이지가 생기지 않도록 */
+  :has(+ .pg-spacer) { margin-bottom: 0 !important; padding-bottom: 0 !important; }
+  .cv-sec:has(> .pg-spacer:last-child), .cv-sec:has(+ .pg-spacer) { margin-bottom: 0 !important; }
 }
